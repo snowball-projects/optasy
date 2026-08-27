@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MPL-2.0
 import unittest
 
 from scripts.calibrate_defender_availability import (

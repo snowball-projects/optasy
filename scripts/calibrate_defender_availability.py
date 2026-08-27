@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MPL-2.0
 """Calibrate defender availability from historical injury reports and snap counts."""
 
 from __future__ import annotations

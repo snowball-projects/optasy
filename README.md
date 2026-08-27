@@ -132,3 +132,10 @@ opposing player's fantasy points.
 Optasy remains a focused personal decision tool, not a hosted product. The next
 substantive step is an independent projection-source audit and a comparison
 against an established live draft assistant.
+
+## License
+
+Unless otherwise noted, the source code, documentation, configuration examples,
+and committed research artifacts in this repository are available under the
+[Mozilla Public License 2.0](LICENSE). Private inputs and generated artifacts
+excluded from the repository are not included in this license grant.

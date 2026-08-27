@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MPL-2.0
 import csv
 import gzip
 import json
