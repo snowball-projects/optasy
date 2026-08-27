@@ -1,0 +1,65 @@
+{
+  "defense_snap_retention": {
+    "global_mean_mae": 0.43724535,
+    "paired_mae_improvement_vs_global": {
+      "lower_95": 0.1837526,
+      "mean": 0.19286255,
+      "upper_95": 0.20212159
+    },
+    "paired_mae_improvement_vs_report_status": {
+      "lower_95": 0.00351182,
+      "mean": 0.00517774,
+      "upper_95": 0.00678337
+    },
+    "report_plus_practice_mae": 0.24438279,
+    "report_status_mae": 0.24956054,
+    "test_records_with_prior_baseline": 2898
+  },
+  "generated_at": "2026-08-25T18:57:51.841996Z",
+  "information_timing_audit": {
+    "missing_schedule_source_rows_excluded": 8,
+    "post_kickoff_source_rows_excluded": 3,
+    "pre_kickoff_source_rows": 10962,
+    "pre_kickoff_unique_player_weeks": 10962,
+    "unique_player_weeks_included": 10961,
+    "unmatched_player_id_player_weeks_excluded": 1
+  },
+  "limitations": [
+    "2021-2023 informed the model and 2024 is the temporal test; none is prospective.",
+    "Participation means at least one defensive snap, not merely being active.",
+    "Defensive snap retention is capped at one relative to the prior four appearances.",
+    "This calibrates availability, not the fantasy impact of a defender's absence."
+  ],
+  "method_status": "exploratory_historical_calibration",
+  "play_probability": {
+    "global_baseline_brier": 0.2364077,
+    "paired_brier_improvement_vs_global": {
+      "lower_95": 0.11665478,
+      "mean": 0.12228237,
+      "upper_95": 0.12799743
+    },
+    "paired_brier_improvement_vs_report_status": {
+      "lower_95": -0.00041868,
+      "mean": 0.00102917,
+      "upper_95": 0.00253417
+    },
+    "report_plus_practice_brier": 0.11412533,
+    "report_plus_practice_log_loss": 0.35858037,
+    "report_status_brier": 0.1151545
+  },
+  "record_count": 10961,
+  "source_snapshot": "20260825T183952Z",
+  "test_defensive_participation_rate": 0.61697927,
+  "test_records": 3039,
+  "test_season": 2024,
+  "train_records": 7922,
+  "train_seasons": [
+    2021,
+    2022,
+    2023
+  ],
+  "uncertainty": {
+    "bootstrap_resampling_unit": "season_week",
+    "bootstrap_samples": 5000
+  }
+}

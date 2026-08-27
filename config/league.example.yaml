@@ -1,0 +1,31 @@
+schema_version: 1
+
+source:
+  platform: espn
+  league_id: "YOUR_LEAGUE_ID"
+  season: 2026
+
+league:
+  team_count: 12
+
+draft:
+  type: snake
+  user_pick_position: 5
+
+roster:
+  roster_size: 15
+  lineup_slots:
+    QB: 1
+    RB: 2
+    WR: 2
+    TE: 1
+    FLEX: 1
+    K: 1
+    D_ST: 0
+  positional_maximums:
+    QB: 4
+    RB: 8
+    WR: 8
+    TE: 3
+    K: 3
+    D_ST: 3

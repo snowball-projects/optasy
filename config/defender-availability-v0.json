@@ -1,0 +1,116 @@
+{
+  "activation_constraints": [
+    "Use only for defenders appearing on an injury/practice report.",
+    "Use only at final_status or inactive information vintages.",
+    "Override official Out and reserve-list statuses to zero.",
+    "Do not interpret lost snap capacity as a fantasy-point adjustment."
+  ],
+  "binary_prediction_rule": "report_status_only",
+  "cell_shrinkage": 20,
+  "frozen_at": "2026-08-25T18:57:51.841996Z",
+  "global": {
+    "defensive_participation_probability": 0.60739525,
+    "expected_defense_snap_retention": 0.5497519
+  },
+  "method_status": "experimental_historical_prior",
+  "model_version": "defender-availability-v0",
+  "report_plus_practice": {
+    "DOUBTFUL|DNP": {
+      "defensive_participation_probability": 0.02066776,
+      "expected_defense_snap_retention": 0.01902628,
+      "train_n": 139
+    },
+    "DOUBTFUL|FULL": {
+      "defensive_participation_probability": 0.05144693,
+      "expected_defense_snap_retention": 0.04999431,
+      "train_n": 5
+    },
+    "DOUBTFUL|LIMITED": {
+      "defensive_participation_probability": 0.01692333,
+      "expected_defense_snap_retention": 0.01838026,
+      "train_n": 56
+    },
+    "NO_GAME_DESIGNATION|DNP": {
+      "defensive_participation_probability": 0.77658385,
+      "expected_defense_snap_retention": 0.71710636,
+      "train_n": 584
+    },
+    "NO_GAME_DESIGNATION|FULL": {
+      "defensive_participation_probability": 0.86590139,
+      "expected_defense_snap_retention": 0.78171165,
+      "train_n": 2955
+    },
+    "NO_GAME_DESIGNATION|LIMITED": {
+      "defensive_participation_probability": 0.87685218,
+      "expected_defense_snap_retention": 0.82283484,
+      "train_n": 483
+    },
+    "OUT|DNP": {
+      "defensive_participation_probability": 0.00011912,
+      "expected_defense_snap_retention": 0.00012427,
+      "train_n": 1347
+    },
+    "OUT|FULL": {
+      "defensive_participation_probability": 0.00465259,
+      "expected_defense_snap_retention": 0.00479745,
+      "train_n": 15
+    },
+    "OUT|LIMITED": {
+      "defensive_participation_probability": 0.001416,
+      "expected_defense_snap_retention": 0.00146589,
+      "train_n": 95
+    },
+    "OUT|NO_PRACTICE_DESIGNATION": {
+      "defensive_participation_probability": 0.00465259,
+      "expected_defense_snap_retention": 0.00465635,
+      "train_n": 15
+    },
+    "QUESTIONABLE|DNP": {
+      "defensive_participation_probability": 0.44363476,
+      "expected_defense_snap_retention": 0.38507265,
+      "train_n": 382
+    },
+    "QUESTIONABLE|FULL": {
+      "defensive_participation_probability": 0.70777017,
+      "expected_defense_snap_retention": 0.61705868,
+      "train_n": 410
+    },
+    "QUESTIONABLE|LIMITED": {
+      "defensive_participation_probability": 0.64077766,
+      "expected_defense_snap_retention": 0.55874452,
+      "train_n": 1396
+    },
+    "QUESTIONABLE|NO_PRACTICE_DESIGNATION": {
+      "defensive_participation_probability": 0.57235289,
+      "expected_defense_snap_retention": 0.49430024,
+      "train_n": 40
+    }
+  },
+  "report_status": {
+    "DOUBTFUL": {
+      "defensive_participation_probability": 0.06430866,
+      "expected_defense_snap_retention": 0.06249289,
+      "train_n": 200
+    },
+    "NO_GAME_DESIGNATION": {
+      "defensive_participation_probability": 0.85283224,
+      "expected_defense_snap_retention": 0.77584894,
+      "train_n": 4022
+    },
+    "OUT": {
+      "defensive_participation_probability": 0.00814203,
+      "expected_defense_snap_retention": 0.00791579,
+      "train_n": 1472
+    },
+    "QUESTIONABLE": {
+      "defensive_participation_probability": 0.61705868,
+      "expected_defense_snap_retention": 0.54018104,
+      "train_n": 2228
+    }
+  },
+  "retention_prediction_rule": "report_plus_practice",
+  "schema_version": 1,
+  "source_snapshot": "20260825T183952Z",
+  "test_season": 2024,
+  "train_seasons": [2021, 2022, 2023]
+}

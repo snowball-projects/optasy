@@ -1,0 +1,128 @@
+{
+  "calibration_seasons": [2021, 2022, 2023, 2024],
+  "captured_at": "2026-08-25T18:39:54.130372Z",
+  "files": [
+    {
+      "bytes": 2177143,
+      "kind": "schedules",
+      "path": "schedules-0.csv",
+      "season": 0,
+      "sha256": "2716d01cb983529e39f68d817f5641228a63e38f970ee5588c071f0de20fb83c",
+      "url": "https://raw.githubusercontent.com/nflverse/nfldata/master/data/games.csv"
+    },
+    {
+      "bytes": 7354661,
+      "kind": "players",
+      "path": "players-0.csv",
+      "season": 0,
+      "sha256": "3fd254b6763b06858819b4c26d9abb80628b4d46e934e62bf2db05cb6221a5a9",
+      "url": "https://github.com/nflverse/nflverse-data/releases/download/players/players.csv"
+    },
+    {
+      "bytes": 953822,
+      "kind": "rosters",
+      "path": "rosters-2021.csv",
+      "season": 2021,
+      "sha256": "a95e57ebe1df25224a4d19ed43aaffc5c2097a8b369954178b8592537ff77d34",
+      "url": "https://github.com/nflverse/nflverse-data/releases/download/rosters/roster_2021.csv"
+    },
+    {
+      "bytes": 737083,
+      "kind": "injuries",
+      "path": "injuries-2021.csv",
+      "season": 2021,
+      "sha256": "1049fb9ff0fe7cfcf3ba8bfe1f5a35d3aba985c461c8fb7bf5201735b6d34254",
+      "url": "https://github.com/nflverse/nflverse-data/releases/download/injuries/injuries_2021.csv"
+    },
+    {
+      "bytes": 980115,
+      "kind": "rosters",
+      "path": "rosters-2022.csv",
+      "season": 2022,
+      "sha256": "864719595d14909c73bd14110adcdcfc304c6621de9ba34feafb83666fac43c9",
+      "url": "https://github.com/nflverse/nflverse-data/releases/download/rosters/roster_2022.csv"
+    },
+    {
+      "bytes": 752433,
+      "kind": "injuries",
+      "path": "injuries-2022.csv",
+      "season": 2022,
+      "sha256": "5f0d60324e597edd1a2ced8540b04e40b51dd440591dd1df11b8d96343387c9e",
+      "url": "https://github.com/nflverse/nflverse-data/releases/download/injuries/injuries_2022.csv"
+    },
+    {
+      "bytes": 967354,
+      "kind": "rosters",
+      "path": "rosters-2023.csv",
+      "season": 2023,
+      "sha256": "f98283e6ef420babc597092b5483109a4570f9b5f63b7bfcce69643290960b6c",
+      "url": "https://github.com/nflverse/nflverse-data/releases/download/rosters/roster_2023.csv"
+    },
+    {
+      "bytes": 140729,
+      "kind": "injuries",
+      "path": "injuries-2023.csv.gz",
+      "season": 2023,
+      "sha256": "fc8468eeeaff24151ee94d5d718116cee2baceee07b3ee151c4d42a6aec763e2",
+      "url": "https://github.com/nflverse/nflverse-data/releases/download/injuries/injuries_2023.csv.gz"
+    },
+    {
+      "bytes": 384633,
+      "kind": "rosters",
+      "path": "rosters-2024.csv.gz",
+      "season": 2024,
+      "sha256": "5216d909f929d57de0a4db158a93e53f15a82df5bc3c464240c728849332939f",
+      "url": "https://github.com/nflverse/nflverse-data/releases/download/rosters/roster_2024.csv.gz"
+    },
+    {
+      "bytes": 157383,
+      "kind": "injuries",
+      "path": "injuries-2024.csv.gz",
+      "season": 2024,
+      "sha256": "7fe70c7b1ec165e2fcdf57f29034f8ec104875071600e30eafdb1849591e2a45",
+      "url": "https://github.com/nflverse/nflverse-data/releases/download/injuries/injuries_2024.csv.gz"
+    },
+    {
+      "bytes": 470284,
+      "kind": "snap_counts",
+      "path": "snap_counts-2020.csv.gz",
+      "season": 2020,
+      "sha256": "b0db9ca201a3c960dbd13c368b89b6b855067ba144f1b7f3d3024582b6996450",
+      "url": "https://github.com/nflverse/nflverse-data/releases/download/snap_counts/snap_counts_2020.csv.gz"
+    },
+    {
+      "bytes": 498521,
+      "kind": "snap_counts",
+      "path": "snap_counts-2021.csv.gz",
+      "season": 2021,
+      "sha256": "dcf6b6fb032c83ed11b8a4cf2d06f4c9745161df99b425b3974d502b6a8b6a08",
+      "url": "https://github.com/nflverse/nflverse-data/releases/download/snap_counts/snap_counts_2021.csv.gz"
+    },
+    {
+      "bytes": 495661,
+      "kind": "snap_counts",
+      "path": "snap_counts-2022.csv.gz",
+      "season": 2022,
+      "sha256": "1fd9fdc2362bc362bfc56acec6410a1a680987065d8c7068b0bdd7e0289d3cab",
+      "url": "https://github.com/nflverse/nflverse-data/releases/download/snap_counts/snap_counts_2022.csv.gz"
+    },
+    {
+      "bytes": 500319,
+      "kind": "snap_counts",
+      "path": "snap_counts-2023.csv.gz",
+      "season": 2023,
+      "sha256": "11fbfcfaaf3e0eeef4cbf159821a0e48d9824e84fccbab26b8e50c6f67ad8830",
+      "url": "https://github.com/nflverse/nflverse-data/releases/download/snap_counts/snap_counts_2023.csv.gz"
+    },
+    {
+      "bytes": 502822,
+      "kind": "snap_counts",
+      "path": "snap_counts-2024.csv.gz",
+      "season": 2024,
+      "sha256": "fe1d819db55d6e333057a8efcec52e8506ef111c7961b0e0411310393bb912bb",
+      "url": "https://github.com/nflverse/nflverse-data/releases/download/snap_counts/snap_counts_2024.csv.gz"
+    }
+  ],
+  "source_snapshot": "20260825T183952Z",
+  "test_season": 2024
+}
