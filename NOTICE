@@ -1,0 +1,13 @@
+Optasy
+Copyright 2026 snowball
+
+Published calibration results were derived from nflverse data licensed under
+Creative Commons Attribution 4.0 International:
+https://github.com/nflverse/nflverse-data
+https://creativecommons.org/licenses/by/4.0/
+
+Schedule inputs came from NFL Data by Lee Sharpe and nflverse:
+https://github.com/nflverse/nfldata
+
+The source data were filtered, normalized, joined, and statistically summarized.
+Raw source data are not redistributed in this repository.

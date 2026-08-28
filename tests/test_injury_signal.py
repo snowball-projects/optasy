@@ -1,4 +1,5 @@
-# SPDX-License-Identifier: MPL-2.0
+# Copyright 2026 snowball
+# SPDX-License-Identifier: Apache-2.0
 import json
 import tempfile
 import unittest

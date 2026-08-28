@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-# SPDX-License-Identifier: MPL-2.0
+# Copyright 2026 snowball
+# SPDX-License-Identifier: Apache-2.0
 """Calibrate defender availability from historical injury reports and snap counts."""
 
 from __future__ import annotations

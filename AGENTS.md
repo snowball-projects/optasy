@@ -2,7 +2,8 @@
 
 ## Objective
 
-Maintain small, evidence-backed, transparent fantasy-football decision tools.
+Maintain Optasy as a snowball project comprising small, evidence-backed,
+transparent fantasy-football decision tools.
 Prefer improvements that support the user's private league without turning
 Optasy into a generalized platform.
 

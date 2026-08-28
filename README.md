@@ -1,5 +1,7 @@
 # Optasy
 
+A snowball project.
+
 Optasy (Optimized Fantasy) is a personal fantasy-football analytics project. It
 turns projection, draft, league-history, and injury data into small,
 explainable decision artifacts instead of an opaque recommendation score.
@@ -135,7 +137,9 @@ against an established live draft assistant.
 
 ## License
 
-Unless otherwise noted, the source code, documentation, configuration examples,
-and committed research artifacts in this repository are available under the
-[Mozilla Public License 2.0](LICENSE). Private inputs and generated artifacts
-excluded from the repository are not included in this license grant.
+Copyright 2026 snowball. Unless otherwise noted, Optasy's original source code,
+documentation, configuration examples, and committed research artifacts are
+available under the [Apache License 2.0](LICENSE). See [NOTICE](NOTICE) for
+source attribution. Third-party packages and data remain under their respective
+licenses and terms; private inputs and generated artifacts excluded from this
+repository are not included in the license grant.
