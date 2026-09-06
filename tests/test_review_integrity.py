@@ -134,3 +134,23 @@ class ReviewIntegrityTests(unittest.TestCase):
                     for error in verify_frozen_prediction(prediction)
                 )
             )
+
+    def test_failed_decision_write_can_retry_without_a_partial_archive(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            snapshot = root / "snapshots" / "fixture"
+            snapshot.mkdir(parents=True)
+            (snapshot / "manifest.json").write_text("{}")
+            recommendation = {"on_clock": True, "next_user_pick": 5, "last_overall_pick": 4}
+            with (
+                patch.object(draft_board, "write_csv", side_effect=OSError("disk full")),
+                self.assertRaises(OSError),
+            ):
+                draft_board.archive_live_decision(root, snapshot, {}, [], recommendation)
+            self.assertFalse(list((root / "decisions").rglob("decision-state.json")))
+            with patch("builtins.print"):
+                archived = draft_board.archive_live_decision(root, snapshot, {}, [], recommendation)
+            self.assertTrue((archived / "available-candidates.csv").is_file())
+            (archived / "recommendation.json").unlink()
+            with self.assertRaisesRegex(RuntimeError, "Incomplete"):
+                draft_board.archive_live_decision(root, snapshot, {}, [], recommendation)

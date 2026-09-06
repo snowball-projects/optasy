@@ -2047,6 +2047,10 @@ def archive_live_decision(
         (snapshot_dir / "manifest.json").read_bytes()
     ).hexdigest()
     if package_dir.exists():
+        if not all((package_dir / filename).is_file() for filename in (
+            "decision-state.json", "recommendation.json", "available-candidates.csv"
+        )):
+            raise RuntimeError(f"Incomplete existing decision archive: {package_dir}")
         existing = read_json(package_dir / "decision-state.json")
         if existing.get("observed_state_sha256") != state_sha256:
             raise RuntimeError(f"Decision archive collision at {package_dir}.")
@@ -2059,26 +2063,32 @@ def archive_live_decision(
                 "code or source data. Preserve the original decision package."
             )
         return package_dir
-    package_dir.mkdir(parents=True, exist_ok=False)
-    write_json(
-        package_dir / "decision-state.json",
-        {
-            "recorded_at": datetime.now(timezone.utc).isoformat(),
-            "pick_number": pick_number,
-            "observed_through_pick": recommendation["last_overall_pick"],
-            "observed_picks": observed_picks,
-            "observed_state_sha256": state_sha256,
-            "source_snapshot": snapshot_dir.name,
-            "source_manifest_sha256": manifest_sha256,
-            "draft_board_code_sha256": script_sha256,
-        },
-    )
-    write_json(package_dir / "recommendation.json", recommendation)
-    write_csv(
-        package_dir / "available-candidates.csv",
-        live_rows,
-        fieldnames=LIVE_RANKING_FIELDS,
-    )
+    package_dir.parent.mkdir(parents=True, exist_ok=True)
+    staging = Path(tempfile.mkdtemp(prefix=f".{package_dir.name}-", dir=package_dir.parent))
+    try:
+        write_json(
+            staging / "decision-state.json",
+            {
+                "recorded_at": datetime.now(timezone.utc).isoformat(),
+                "pick_number": pick_number,
+                "observed_through_pick": recommendation["last_overall_pick"],
+                "observed_picks": observed_picks,
+                "observed_state_sha256": state_sha256,
+                "source_snapshot": snapshot_dir.name,
+                "source_manifest_sha256": manifest_sha256,
+                "draft_board_code_sha256": script_sha256,
+            },
+        )
+        write_json(staging / "recommendation.json", recommendation)
+        write_csv(
+            staging / "available-candidates.csv",
+            live_rows,
+            fieldnames=LIVE_RANKING_FIELDS,
+        )
+        staging.rename(package_dir)
+    except Exception:
+        shutil.rmtree(staging, ignore_errors=True)
+        raise
     print(f"[decision archived] {package_dir}", flush=True)
     return package_dir
 

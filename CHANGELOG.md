@@ -13,7 +13,9 @@ reviewed development baseline and explicit operating limits.
 - Reject historical-source and frozen-prediction manifest paths that leave
   their snapshot directory, including external symlinks.
 - Raise dependency floors to the verified current releases and pin CI actions.
-- Add four synthetic integrity regression tests; the full suite has 43 tests.
+- Publish complete decision archives atomically and reject incomplete existing
+  packages so interrupted writes cannot masquerade as preserved decisions.
+- Add five synthetic integrity regression tests; the full suite has 44 tests.
 
 This release does not refresh provider inputs, rewrite frozen research artifacts,
 change recommendation policy, or enable a live draft integration. Code changes
