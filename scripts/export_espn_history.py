@@ -105,7 +105,9 @@ def request_json(
     headers: dict[str, str] | None = None,
 ) -> Any:
     with make_session(credentials) as session:
-        response = session.get(url, params=params, headers=headers, timeout=45)
+        response = session.get(url, params=params, headers=headers, timeout=45, allow_redirects=False)
+    if 300 <= response.status_code < 400:
+        raise RuntimeError("Authenticated provider request returned an unexpected redirect.")
     if response.status_code in {401, 403}:
         raise RuntimeError("ESPN rejected the credentials in .env.")
     response.raise_for_status()

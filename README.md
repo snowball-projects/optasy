@@ -12,7 +12,7 @@ prospective decision records stay local.
 
 ## What it does
 
-- Archives authenticated ESPN league history as immutable JSON and a queryable
+- Archives authenticated ESPN league history as lossless JSON and a queryable
   SQLite database.
 - Builds a projection-aware draft board from ESPN data and FantasyPros-derived
   consensus rankings published by DynastyProcess.
@@ -40,7 +40,8 @@ in custom live-draft integration.
 | `injury_signal.py` | Derive defender and unit availability features | Exposure and burden tables |
 | `calibrate_defender_availability.py` | Fit and evaluate historical availability priors | Frozen model + evaluation |
 
-Generated data is deliberately excluded from Git. Prospective snapshots and
+The history exporter uses a local cache; its explicit `--refresh` option replaces
+cached raw JSON. Generated data is excluded from Git. Prospective snapshots and
 decision records are append-only: once an outcome is known, their original
 inputs and recommendations must not be rewritten.
 

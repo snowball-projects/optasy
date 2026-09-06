@@ -29,6 +29,7 @@ if __package__:
         NFLVERSE_RELEASE_ROOT,
         defensive_role,
         make_session,
+        safe_snapshot_file,
         sha256_bytes,
     )
 else:
@@ -36,6 +37,7 @@ else:
         NFLVERSE_RELEASE_ROOT,
         defensive_role,
         make_session,
+        safe_snapshot_file,
         sha256_bytes,
     )
 
@@ -232,7 +234,7 @@ def source_file(
     ]
     if len(matches) != 1:
         raise RuntimeError(f"Expected one {kind} file for {season}; found {len(matches)}.")
-    path = source_dir / matches[0]["path"]
+    path = safe_snapshot_file(source_dir, matches[0]["path"])
     if sha256_bytes(path.read_bytes()) != matches[0]["sha256"]:
         raise RuntimeError(f"Historical source hash mismatch: {path}")
     return path
@@ -365,6 +367,7 @@ def build_records(
     records: list[dict[str, Any]] = []
     for season in seasons:
         latest_reports: dict[tuple[str, int, str], dict[str, str]] = {}
+        latest_times: dict[tuple[str, int, str], datetime] = {}
         for injury in injury_by_season[season]:
             if (injury.get("game_type") or "") != "REG":
                 continue
@@ -393,11 +396,9 @@ def build_records(
                 continue
             timing_audit["pre_kickoff_source_rows"] += 1
             key = (team, week, gsis_id)
-            existing = latest_reports.get(key)
-            if existing is None or (injury.get("date_modified") or "") > (
-                existing.get("date_modified") or ""
-            ):
+            if key not in latest_times or modified_at > latest_times[key]:
                 latest_reports[key] = injury
+                latest_times[key] = modified_at
 
         for (team, week, gsis_id), injury in latest_reports.items():
             timing_audit["pre_kickoff_unique_player_weeks"] += 1

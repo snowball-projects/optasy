@@ -350,7 +350,10 @@ def fetch_espn_players(season: int, week: int, league_id: str) -> tuple[dict[str
             params={"view": "kona_player_info", "scoringPeriodId": week},
             headers={"x-fantasy-filter": json.dumps(player_filter)},
             timeout=60,
+            allow_redirects=False,
         )
+    if 300 <= response.status_code < 400:
+        raise RuntimeError("Authenticated provider request returned an unexpected redirect.")
     if response.status_code in {401, 403}:
         raise RuntimeError("ESPN rejected the credentials in .env.")
     response.raise_for_status()
@@ -410,7 +413,10 @@ def fetch_fantasypros_json(
             params=params,
             headers={"x-api-key": key},
             timeout=60,
+            allow_redirects=False,
         )
+    if 300 <= response.status_code < 400:
+        raise RuntimeError("Authenticated provider request returned an unexpected redirect.")
     if response.status_code in {401, 403}:
         raise RuntimeError(
             "FantasyPros rejected the API key or the requested production endpoint."

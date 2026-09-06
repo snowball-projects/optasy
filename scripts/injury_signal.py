@@ -19,9 +19,9 @@ from pathlib import Path
 from typing import Any, Iterable
 
 if __package__:
-    from .injury_snapshot import manifest_paths, sha256_file, verify_snapshot
+    from .injury_snapshot import manifest_paths, safe_snapshot_file, sha256_file, verify_snapshot
 else:
-    from injury_snapshot import manifest_paths, sha256_file, verify_snapshot
+    from injury_snapshot import manifest_paths, safe_snapshot_file, sha256_file, verify_snapshot
 
 
 EXPOSURE_FIELDS = [
@@ -642,7 +642,11 @@ def verify_frozen_prediction(prediction_dir: Path) -> list[str]:
             errors.append(f"unsafe frozen prediction path: {relative}")
             continue
         declared.add(relative.as_posix())
-        path = prediction_dir / relative
+        try:
+            path = safe_snapshot_file(prediction_dir, relative.as_posix())
+        except ValueError as error:
+            errors.append(str(error))
+            continue
         if not path.is_file():
             errors.append(f"missing frozen prediction file: {path}")
             continue

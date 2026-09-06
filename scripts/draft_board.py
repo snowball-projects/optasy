@@ -363,7 +363,10 @@ def fetch_espn_players(
             params={"view": "kona_player_info", "scoringPeriodId": 0},
             headers={"x-fantasy-filter": json.dumps(player_filter)},
             timeout=60,
+            allow_redirects=False,
         )
+    if 300 <= response.status_code < 400:
+        raise RuntimeError("Authenticated provider request returned an unexpected redirect.")
     if response.status_code in {401, 403}:
         raise RuntimeError("ESPN rejected the credentials in .env.")
     response.raise_for_status()
@@ -381,7 +384,10 @@ def fetch_espn_draft(
             espn_league_url(context),
             params=[("view", "mDraftDetail"), ("view", "mStatus")],
             timeout=45,
+            allow_redirects=False,
         )
+    if 300 <= response.status_code < 400:
+        raise RuntimeError("Authenticated provider request returned an unexpected redirect.")
     if response.status_code in {401, 403}:
         raise RuntimeError("ESPN rejected the credentials in .env.")
     response.raise_for_status()
@@ -1657,7 +1663,7 @@ def build_opening_decision_rows(
             complementary, complementary_estimate = likely_next_pick_option(
                 rows, next_pick, samples, espn_id
             )
-            same_position, same_position_estimate = likely_next_pick_option(
+            same_position, _same_position_estimate = likely_next_pick_option(
                 rows,
                 next_pick,
                 samples,
