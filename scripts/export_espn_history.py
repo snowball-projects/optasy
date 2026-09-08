@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # Copyright 2026 snowball
-# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: MIT
 """Archive ESPN fantasy history as raw JSON and a queryable SQLite database."""
 
 from __future__ import annotations

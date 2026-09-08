@@ -1,3 +1,5 @@
+# Copyright 2026 snowball
+# SPDX-License-Identifier: MIT
 import hashlib
 import json
 import tempfile

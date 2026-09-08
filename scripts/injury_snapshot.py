@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # Copyright 2026 snowball
-# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: MIT
 """Capture and verify immutable, timestamped injury-research inputs."""
 
 from __future__ import annotations

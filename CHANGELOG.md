@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.1 - 2026-09-07
+
+- License original software and associated documentation under MIT and update
+  current documentation and source identifiers. Retain third-party data
+  attribution and the original licensing records of prior releases.
+- Header-only changes alter source hashes; preserve existing freezes and use
+  the documented amendment workflow before establishing a new prospective baseline.
+
 ## 0.1.0 - 2026-09-06
 
 Initial source release of the existing decision and research scripts, with a

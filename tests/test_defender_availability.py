@@ -1,5 +1,5 @@
 # Copyright 2026 snowball
-# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: MIT
 import unittest
 
 from scripts.calibrate_defender_availability import (

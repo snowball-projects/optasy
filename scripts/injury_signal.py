@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # Copyright 2026 snowball
-# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: MIT
 """Build transparent defender-level availability features from one snapshot."""
 
 from __future__ import annotations

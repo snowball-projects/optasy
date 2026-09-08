@@ -27,8 +27,8 @@ private league operations belong in the private companion repository.
   and explicit reversal conditions.
 - The live-draft watcher is experimental and read-only. Custom live integration
   is paused; do not automate selections or scrape the browser interface.
-- [LICENSE](LICENSE) and [NOTICE](NOTICE) govern this repository's original
-  material; third-party data and packages retain their own terms.
+- The MIT [LICENSE](LICENSE) and [NOTICE](NOTICE) govern this repository's
+  original material; third-party data and packages retain their own terms.
 
 ## Working agreements
 
