@@ -1,15 +1,18 @@
 # Optasy agent guide
 
-Optasy is a snowball project for small, transparent fantasy-football decision
-tools. This repository contains reusable code and synthetic configuration;
-private league operations belong in the private companion repository.
+Optasy is a snowball project focused exclusively on opposing defensive injuries
+as context for weekly lineup decisions. This repository contains reusable code
+and synthetic configuration; private league operations and inputs stay local.
 
 ## Sources and checks
 
 - [README.md](README.md) owns architecture, setup, and operating boundaries.
 - [config/league.example.yaml](config/league.example.yaml) owns the public schema.
-- [Draft decision protocol](reports/2026-draft-decision-protocol.md) owns the
-  prospective evaluation policy.
+- [Current product direction](docs/PRODUCT.md) owns scope and next steps. The
+  2026 draft passed without useful Optasy assistance, as reported by the founder.
+  Draft assistance, waivers, trades and general rankings are outside active scope.
+- Earlier draft protocols and the broader injury proposal are historical
+  research records, not current instructions. Do not rewrite frozen evidence.
 - Use Python 3.12: `python3 -m venv .venv`, then
   `.venv/bin/pip install -r requirements.txt`.
 - Run `.venv/bin/python -m unittest discover -s tests -v`; the entire suite must
@@ -25,8 +28,11 @@ private league operations belong in the private companion repository.
   estimates as evidence of changes in fantasy points.
 - Keep recommendations player-agnostic, with uncertainty, a strong alternative,
   and explicit reversal conditions.
-- The live-draft watcher is experimental and read-only. Custom live integration
-  is paused; do not automate selections or scrape the browser interface.
+- The retained live-draft watcher is historical, experimental and read-only.
+  Do not resume draft integration, automate selections or scrape its interface.
+- Keep opposing-defender availability, plausible matchup relevance and measured
+  fantasy impact separate. Do not invent numerical player upgrades or present
+  missing/stale injury coverage as evidence of a healthy opponent.
 - The MIT [LICENSE](LICENSE) and [NOTICE](NOTICE) govern this repository's
   original material; third-party data and packages retain their own terms.
 

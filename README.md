@@ -2,33 +2,39 @@
 
 A snowball project.
 
-Optasy (Optimized Fantasy) is a personal fantasy-football analytics project. It
-turns projection, draft, league-history, and injury data into small,
-explainable decision artifacts instead of an opaque recommendation score.
+Optasy (Optimized Fantasy) studies whether injuries to an opposing NFL defense
+give a candidate starter a more favorable matchup. Its current focus is weekly
+lineup decisions, using existing providers' projections as comparison baselines.
 
-This public repository contains the reusable implementation and synthetic
-configuration only. Private league data, credentials, generated boards, and
-prospective decision records stay local.
+**Direction changed September 10, 2026:** The founder reports that Optasy was
+not useful in time for the 2026 draft and that the draft was completed without
+it. Draft assistance is no longer an active objective. The
+[weekly opponent-injury direction](docs/PRODUCT.md) is the current scope;
+older draft plans and broader research proposals are historical context.
 
-## What it does
+This public repository contains reusable Python scripts and synthetic
+configuration. Credentials, private league data and generated artifacts stay
+local. There is no hosted dashboard or completed weekly lineup interface yet.
 
-- Archives authenticated ESPN league history as lossless JSON and a queryable
-  SQLite database.
-- Builds a projection-aware draft board from ESPN data and FantasyPros-derived
-  consensus rankings published by DynastyProcess.
-- Estimates whether candidates are likely to survive until a later pick using
-  historically observed draft residuals.
-- Captures append-only injury and projection snapshots with timestamps and
-  SHA-256 manifests.
-- Combines injury status with nflverse roster, depth-chart, and snap context to
-  estimate defender availability and workload retention.
-- Preserves baselines, alternatives, uncertainty, and reversal conditions so a
-  recommendation can be evaluated after the fact.
+## What exists
 
-The live-draft watcher is experimental and read-only. Optasy does not automate
-draft selections or scrape the browser interface. The current product decision
-is to test an established synchronized draft assistant before investing further
-in custom live-draft integration.
+- Timestamped, append-only injury and projection snapshots with SHA-256
+  verification and source-neutral CSV imports.
+- Defender matching against roster, depth-chart and prior-snap context.
+- Experimental defender participation and workload-retention estimates, gated
+  by report source and information vintage.
+- Defender-exposure and defensive-unit burden tables, with replacement
+  candidates and explicit missing information.
+- A frozen historical availability study and credential-free tests.
+
+These components do not yet connect candidate offensive players to this week's
+opponent injuries or estimate fantasy-point effects. Replacement candidates
+come from depth order; replacement quality is not estimated. The current live
+context loader uses prior-season snaps and needs current-season, pre-cutoff
+context before regular weekly use.
+
+Draft-board and league-history scripts remain available for reference. Their
+presence is not a commitment to resume draft, waiver or trade features.
 
 ## Design
 
@@ -71,7 +77,10 @@ Fill in the local files with your own ESPN league ID and, when authenticated
 access is required, ESPN cookies. `FANTASYPROS_API_KEY` is optional. Both local
 files are ignored by Git; never commit credentials or private league data.
 
-## Workflows
+## Historical utilities
+
+These commands preserve the earlier implementation; they are not the active
+product roadmap.
 
 Archive selected ESPN seasons:
 
@@ -91,6 +100,8 @@ Freeze the exact pre-draft inputs after review:
 ```sh
 .venv/bin/python scripts/draft_board.py freeze-sources
 ```
+
+## Injury research workflow
 
 Capture and verify an injury-research snapshot:
 
@@ -129,12 +140,14 @@ opposing player's fantasy points.
 
 - [Defender-availability calibration](reports/2021-2024-defender-availability-calibration.md)
 - [Frozen evaluation](reports/artifacts/20260825T183952Z-availability-evaluation.json)
-- [Opponent-injury signal design](reports/2026-opponent-injury-signal-proposal.md)
-- [Draft decision protocol](reports/2026-draft-decision-protocol.md)
+- [Current weekly scope and next steps](docs/PRODUCT.md)
+- [Historical opponent-injury research proposal](reports/2026-opponent-injury-signal-proposal.md)
+- [Historical draft decision protocol](reports/2026-draft-decision-protocol.md)
 
-Optasy remains a focused personal decision tool, not a hosted product. The next
-substantive step is an independent projection-source audit and a comparison
-against an established live draft assistant.
+The next step is a source-verified weekly opponent-injury comparison for a
+small set of candidate starters. A working comparison must distinguish unknown
+coverage from a healthy defense and possible matchup relevance from a measured
+fantasy advantage. See the [current direction](docs/PRODUCT.md).
 
 ## License
 
