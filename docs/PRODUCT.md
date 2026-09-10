@@ -5,7 +5,7 @@ draft-first roadmap and the broader scope of earlier research proposals.
 
 ## What happened
 
-The founder reports that Optasy did not become a useful draft tool before the
+The founder reports that optasy did not become a useful draft tool before the
 2026 draft and that the draft was completed without it. This was a failure to
 deliver useful assistance in time, not evidence that the untested injury
 hypothesis succeeded or failed. Do not backfill recommendations or describe
@@ -21,7 +21,7 @@ comparison among the user's candidates; do not build a general fantasy suite.
 Draft assistance, waiver/trade recommendations, independent all-player rankings,
 generic matchup scores, betting signals and automated roster changes are out
 of scope. Existing projections may supply a named, timestamped reference and
-evaluation baseline. Optasy's added analysis must remain injury-specific.
+evaluation baseline. optasy's added analysis must remain injury-specific.
 
 ## MVP scope
 
@@ -95,7 +95,7 @@ and releases. The duplicate `adelevski/optasy-private` GitHub repository was
 deleted after the reviewed preservation notes were verified. Its local checkout,
 credentials and research/league inputs remain private and untouched.
 
-Optasy is one peer project on snowball's website, opening the deployed prototype.
+optasy is one peer project on snowball's website, opening the deployed prototype.
 Historical research and source documentation remain canonical in this repository.
 The original draft/league-history utilities remain for reference; they are not
 active product directions. MIT continues to cover original software, with

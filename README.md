@@ -1,15 +1,15 @@
-# Optasy
+# optasy
 
 A snowball project.
 
 [Open the dashboard](https://snowball-projects.github.io/optasy/) ·
 [Dashboard guide](docs/DASHBOARD.md)
 
-Optasy (Optimized Fantasy) studies whether injuries to an opposing NFL defense
+optasy (Optimized Fantasy) studies whether injuries to an opposing NFL defense
 give a candidate starter a more favorable matchup. Its current focus is weekly
 lineup decisions, using existing providers' projections as comparison baselines.
 
-**Direction changed September 10, 2026:** The founder reports that Optasy was
+**Direction changed September 10, 2026:** The founder reports that optasy was
 not useful in time for the 2026 draft and that the draft was completed without
 it. Draft assistance is no longer an active objective. The
 [weekly opponent-injury direction](docs/PRODUCT.md) is the current scope;
@@ -171,7 +171,7 @@ fantasy advantage. See the [current direction](docs/PRODUCT.md).
 
 ## License
 
-Copyright 2026 snowball. Unless otherwise noted, Optasy's original source code,
+Copyright 2026 snowball. Unless otherwise noted, optasy's original source code,
 documentation, configuration examples, and committed research artifacts are
 available under the [MIT License](LICENSE). See [NOTICE](NOTICE) for
 source attribution. Third-party packages and data remain under their respective

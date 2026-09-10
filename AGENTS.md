@@ -1,6 +1,6 @@
-# Optasy agent guide
+# optasy agent guide
 
-Optasy is a snowball project focused exclusively on opposing defensive injuries
+optasy is a snowball project focused exclusively on opposing defensive injuries
 as context for weekly lineup decisions. This repository contains reusable code
 and synthetic configuration; private league operations and inputs stay local.
 
@@ -15,7 +15,7 @@ and synthetic configuration; private league operations and inputs stay local.
   publish imported or locally generated private snapshots as site assets.
 - [config/league.example.yaml](config/league.example.yaml) owns the public schema.
 - [Current product direction](docs/PRODUCT.md) owns scope and next steps. The
-  2026 draft passed without useful Optasy assistance, as reported by the founder.
+  2026 draft passed without useful optasy assistance, as reported by the founder.
   Draft assistance, waivers, trades and general rankings are outside active scope.
 - Earlier draft protocols and the broader injury proposal are historical
   research records, not current instructions. Do not rewrite frozen evidence.
@@ -46,7 +46,8 @@ and synthetic configuration; private league operations and inputs stay local.
 
 - Read the relevant source and README before editing. Keep changes scoped and
   preserve unrelated work; do not remove tests merely to make checks pass.
-- Use `snowball` in lowercase. Product direction remains with its founder,
+- Use `snowball` and `optasy` in lowercase in all current copy and metadata.
+  Prefer single-word, lowercase product names; specific renames need owner approval. Product direction remains with its founder,
   Nas Delevski. Do not add AI-builder credits or invent product categories.
 - Follow the provisional [snowball principles](https://snowball-projects.github.io/principles/)
   for public claims, architecture, data practices, and operations. Keep source
