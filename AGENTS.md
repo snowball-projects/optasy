@@ -7,6 +7,12 @@ and synthetic configuration; private league operations and inputs stay local.
 ## Sources and checks
 
 - [README.md](README.md) owns architecture, setup, and operating boundaries.
+- [Dashboard guide](docs/DASHBOARD.md) owns the browser snapshot schema and
+  deployment. Use Node 24; run `npm ci`, `npm test`, `npm run build` and
+  `node --check web/app.mjs`. Main deploys to GitHub Pages after both suites pass.
+- Keep the dashboard static and dependency-free unless a demonstrated need
+  warrants a change. Fictional examples must remain visibly labelled. Never
+  publish imported or locally generated private snapshots as site assets.
 - [config/league.example.yaml](config/league.example.yaml) owns the public schema.
 - [Current product direction](docs/PRODUCT.md) owns scope and next steps. The
   2026 draft passed without useful Optasy assistance, as reported by the founder.

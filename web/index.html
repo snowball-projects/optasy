@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#173e39" />
+    <meta
+      name="description"
+      content="Compare opposing defensive injuries for weekly fantasy lineup decisions. A prototype with sample data and private, local imports."
+    />
+    <meta name="referrer" content="no-referrer" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'"
+    />
+    <link rel="canonical" href="https://snowball-projects.github.io/optasy/" />
+    <link rel="icon" type="image/svg+xml" href="icon.svg" />
+    <link rel="stylesheet" href="styles.css" />
+    <title>Optasy · snowball</title>
+  </head>
+  <body>
+    <a href="#comparison" class="skip-link">Skip to comparison</a>
+    <header class="topbar">
+      <a class="brand" href="./" aria-label="Optasy home"
+        ><img src="icon.svg" width="34" height="34" alt="" /><span
+          >Optasy</span
+        ></a
+      >
+      <span class="prototype">prototype</span>
+      <nav aria-label="Project">
+        <a href="https://snowball-projects.github.io/">snowball ↗</a
+        ><button
+          id="about-open"
+          class="icon-button"
+          aria-label="About this prototype"
+        >
+          i
+        </button>
+      </nav>
+    </header>
+    <main class="workspace">
+      <aside class="sidebar" aria-label="Candidate players">
+        <div class="sidebar-title">
+          <h1>Your shortlist</h1>
+          <button
+            id="add-player-open"
+            class="icon-button"
+            aria-label="Add a player"
+          >
+            +
+          </button>
+        </div>
+        <label class="search"
+          ><span class="sr-only">Find a candidate</span
+          ><input
+            id="search"
+            type="search"
+            placeholder="Find a candidate"
+            autocomplete="off"
+        /></label>
+        <div class="filters">
+          <label
+            >Position<select id="position">
+              <option value="">All positions</option>
+              <option>QB</option>
+              <option>RB</option>
+              <option>WR</option>
+              <option>TE</option>
+              <option>K</option>
+            </select></label
+          ><label>Week<select id="week"></select></label>
+        </div>
+        <div id="players" class="player-list"></div>
+        <div class="data-tools">
+          <button id="new">New snapshot</button
+          ><label class="button"
+            >Import snapshot<input
+              id="import"
+              type="file"
+              accept=".json,application/json"
+              class="sr-only" /></label
+          ><button id="export">Download snapshot</button
+          ><button id="sample" class="quiet">Load example</button>
+        </div>
+        <p class="privacy">
+          Your entries stay in this tab. Download to keep them.
+        </p>
+      </aside>
+      <section
+        class="results"
+        id="comparison"
+        tabindex="-1"
+        aria-labelledby="comparison-title"
+      >
+        <div class="results-heading">
+          <div>
+            <p class="eyebrow" id="season"></p>
+            <h2 id="comparison-title">Opponent injuries</h2>
+          </div>
+          <span id="mode" class="mode"></span>
+        </div>
+        <p id="dataset-note" class="dataset-note"></p>
+        <p id="message" role="status" aria-live="polite"></p>
+        <div id="comparisons"></div>
+        <p class="limits">
+          Matchup context, not a start/sit ranking. Missing reports never mean a
+          healthy defense.
+        </p>
+      </section>
+    </main>
+    <noscript
+      ><p class="no-script">
+        This dashboard needs JavaScript to compare local snapshots.
+        <a href="https://github.com/snowball-projects/optasy"
+          >Read the source and documentation.</a
+        >
+      </p></noscript
+    >
+    <dialog id="about">
+      <div class="dialog-heading">
+        <h2>About Optasy</h2>
+        <button data-close="about" aria-label="Close information">×</button>
+      </div>
+      <p>
+        A weekly view of injuries to the defenses your candidate starters face.
+      </p>
+      <p>
+        This prototype opens with fictional players, matchups and injuries.
+        Start a new snapshot to enter your own candidates and reports, or import
+        a saved snapshot. There is no automatic live feed.
+      </p>
+      <p>
+        Role links describe possible football mechanisms. They do not prove an
+        easier matchup, measure replacement quality, or add fantasy points.
+        Existing projections may already account for an injury.
+      </p>
+      <p>
+        Report ages over 48 hours are flagged for review, not treated as
+        invalid. Reports timestamped at or after kickoff are excluded. A
+        “reviewed” report is a user-supplied coverage label, not independent
+        verification.
+      </p>
+      <p>
+        Nothing is uploaded or saved automatically. Imports and edits stay in
+        memory until downloaded. No accounts, analytics or advertising.
+      </p>
+      <div class="about-links">
+        <a href="https://github.com/snowball-projects/optasy">Source ↗</a
+        ><a
+          href="https://github.com/snowball-projects/optasy/blob/main/docs/DASHBOARD.md"
+          >Snapshot guide ↗</a
+        ><a href="LICENSE">MIT license</a>
+      </div>
+      <p class="privacy">A snowball project · v0.2.0</p>
+    </dialog>
+    <dialog id="player-dialog">
+      <form id="player-form">
+        <div class="dialog-heading">
+          <h2>Add a candidate</h2>
+          <button
+            type="button"
+            data-close="player-dialog"
+            aria-label="Close player form"
+          >
+            ×
+          </button>
+        </div>
+        <p class="form-note">
+          Enter this week's matchup. Existing team matchups are reused.
+        </p>
+        <label
+          >Player name<input
+            name="name"
+            required
+            maxlength="100"
+            autocomplete="off"
+        /></label>
+        <div class="form-grid">
+          <label
+            >Position<select
+              name="position"
+              id="player-position"
+            ></select></label
+          ><label>Team<select name="team" id="player-team"></select></label
+          ><label
+            >Opponent<select
+              name="opponent"
+              id="player-opponent"
+            ></select></label
+          ><label
+            >Season<input
+              name="season"
+              type="number"
+              min="2020"
+              max="2100"
+              required
+          /></label>
+        </div>
+        <label
+          >Kickoff (your timezone)<input
+            name="kickoff"
+            type="datetime-local"
+            required
+        /></label>
+        <p class="form-note">
+          Week <span id="player-week"></span> · team/opponent order does not
+          encode home-field advantage.
+        </p>
+        <p class="form-error" id="player-error" role="alert"></p>
+        <button type="submit" class="primary">Add candidate</button>
+      </form>
+    </dialog>
+    <dialog id="injury-dialog">
+      <form id="injury-form">
+        <div class="dialog-heading">
+          <h2 id="injury-title">Add opponent injury</h2>
+          <button
+            type="button"
+            data-close="injury-dialog"
+            aria-label="Close injury form"
+          >
+            ×
+          </button>
+        </div>
+        <label
+          >Defender name<input
+            name="name"
+            required
+            maxlength="100"
+            autocomplete="off"
+        /></label>
+        <div class="form-grid">
+          <label>Role<select name="role" id="defender-role"></select></label
+          ><label
+            >Game status<select
+              name="status"
+              id="defender-status"
+            ></select></label
+          ><label
+            >Practice<select
+              name="practice"
+              id="defender-practice"
+            ></select></label
+          ><label
+            >Prior snap share (%)<input
+              name="snap_share"
+              type="number"
+              min="0"
+              max="100"
+              step="0.1"
+              placeholder="Unknown"
+          /></label>
+        </div>
+        <label
+          >Likely replacement<input
+            name="replacement"
+            maxlength="100"
+            placeholder="Unknown" /></label
+        ><label
+          >Source<input
+            name="source"
+            required
+            maxlength="180"
+            placeholder="e.g. team injury report" /></label
+        ><label
+          >Source link (optional)<input
+            name="url"
+            type="url"
+            maxlength="2000"
+            placeholder="https://" /></label
+        ><label
+          >Report time (your timezone)<input
+            name="observed_at"
+            type="datetime-local"
+            required /></label
+        ><label
+          >Note<textarea name="note" maxlength="500" rows="2"></textarea>
+        </label>
+        <p class="form-note" id="injury-source-note">
+          Entries share a team report and timestamp. Use one source vintage per
+          team.
+        </p>
+        <p class="form-error" id="injury-error" role="alert"></p>
+        <button type="submit" class="primary">Save injury</button>
+      </form>
+    </dialog>
+    <dialog id="replace-dialog">
+      <div class="dialog-heading">
+        <h2>Replace this snapshot?</h2>
+        <button data-close="replace-dialog" aria-label="Cancel replacement">
+          ×
+        </button>
+      </div>
+      <p>
+        Your current entries are only in this tab. Download them first if you
+        want to keep them.
+      </p>
+      <div class="dialog-actions">
+        <button id="save-before-replace">Download current</button
+        ><button id="confirm-replace" class="primary">Replace snapshot</button>
+      </div>
+    </dialog>
+    <script type="module" src="app.mjs"></script>
+  </body>
+</html>

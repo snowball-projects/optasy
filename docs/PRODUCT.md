@@ -23,7 +23,7 @@ generic matchup scores, betting signals and automated roster changes are out
 of scope. Existing projections may supply a named, timestamped reference and
 evaluation baseline. Optasy's added analysis must remain injury-specific.
 
-## Smallest useful implementation — proposed, not built
+## MVP scope
 
 1. Choose a week and a short list of players. Resolve each player's team,
    opponent and kickoff; flag byes, changed schedules and unmatched identities.
@@ -42,18 +42,21 @@ evaluation baseline. Optasy's added analysis must remain injury-specific.
    outcomes append to the record. No invented point boost or automatic start/sit
    verdict is needed for the first version.
 
-Start with a locally generated report using the existing Python pipeline.
-A thin static interface is a reasonable later presentation; a new server or
-account system is not required merely to display the comparison. Refreshing
-provider data and hosting a page are separate concerns. Validate usefulness on
-one real weekly decision before generalizing the interface.
+The owner approved publishing a prototype on September 10, 2026 before deeper
+iteration. Version 0.2.0 implements a static comparison with fictional examples
+and manual/local JSON inputs. There is no live feed or Python-to-dashboard
+exporter yet. See the [dashboard guide](DASHBOARD.md) for the implemented input
+contract and limits. Provider refresh and page hosting remain separate concerns;
+no server or account system is required for this MVP.
 
 ## Reuse and gaps
 
 Keep `injury_snapshot.py`, `injury_signal.py`, the frozen availability model,
 calibration tooling and their tests. They already preserve source evidence,
-derive defender/unit availability and expose missing inputs. They do not yet
-join candidate offensive players to current opponents, model offensive usage,
+derive defender/unit availability and expose missing inputs. The dashboard
+joins manually entered candidate/schedule/report records, but the research
+pipeline does not yet provide an integrated current opponent feed, model
+offensive usage,
 measure starter-versus-replacement quality, or estimate injury-driven fantasy
 effects. The snapshot loader currently uses prior-season snap context; weekly
 operation needs dated current-season context using only completed prior games.
@@ -84,15 +87,16 @@ then prospectively. Weak or unstable results should leave the baseline intact.
 The report can be useful for organizing evidence without claiming better
 projections or proven start/sit gains.
 
-## Repository recommendation — awaiting owner approval
+## Canonical repository and retirement
 
-Keep one canonical implementation. Transfer the existing public repository,
-with history and releases, to `snowball-projects/optasy` if approved. A working
-weekly dashboard can later become one peer project on snowball's website;
-the current scripts should not be listed as a live dashboard.
+On September 10, 2026, the owner approved and completed the transfer of the
+existing public repository to `snowball-projects/optasy`, preserving history
+and releases. The duplicate `adelevski/optasy-private` GitHub repository was
+deleted after the reviewed preservation notes were verified. Its local checkout,
+credentials and research/league inputs remain private and untouched.
 
-The private companion duplicates the implementation and is a retirement
-candidate after preservation review and repository-specific approval. Keep
-credentials, league configuration and original local research inputs private;
-they do not belong in the public repository. No transfer or deletion is
-authorized by this recommendation alone.
+Optasy is one peer project on snowball's website, opening the deployed prototype.
+Historical research and source documentation remain canonical in this repository.
+The original draft/league-history utilities remain for reference; they are not
+active product directions. MIT continues to cover original software, with
+third-party data and private inputs retaining their own terms.

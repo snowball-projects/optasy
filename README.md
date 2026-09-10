@@ -2,6 +2,9 @@
 
 A snowball project.
 
+[Open the dashboard](https://snowball-projects.github.io/optasy/) ·
+[Dashboard guide](docs/DASHBOARD.md)
+
 Optasy (Optimized Fantasy) studies whether injuries to an opposing NFL defense
 give a candidate starter a more favorable matchup. Its current focus is weekly
 lineup decisions, using existing providers' projections as comparison baselines.
@@ -14,10 +17,13 @@ older draft plans and broader research proposals are historical context.
 
 This public repository contains reusable Python scripts and synthetic
 configuration. Credentials, private league data and generated artifacts stay
-local. There is no hosted dashboard or completed weekly lineup interface yet.
+local. The dashboard is a published prototype with fictional examples and
+manual/local snapshot input. It has no automatic live injury feed.
 
 ## What exists
 
+- A compact weekly dashboard: candidate shortlists, opponent matching,
+  position-linked injury context, manual entry and local JSON import/download.
 - Timestamped, append-only injury and projection snapshots with SHA-256
   verification and source-neutral CSV imports.
 - Defender matching against roster, depth-chart and prior-snap context.
@@ -27,9 +33,10 @@ local. There is no hosted dashboard or completed weekly lineup interface yet.
   candidates and explicit missing information.
 - A frozen historical availability study and credential-free tests.
 
-These components do not yet connect candidate offensive players to this week's
-opponent injuries or estimate fantasy-point effects. Replacement candidates
-come from depth order; replacement quality is not estimated. The current live
+The browser connects candidates to opponents using entered/imported schedules
+and reports. It does not fetch current player or injury data, run the Python
+availability model, or estimate fantasy-point effects. In the Python research
+pipeline, replacement candidates come from depth order; replacement quality is not estimated. The current live
 context loader uses prior-season snaps and needs current-season, pre-cutoff
 context before regular weekly use.
 
@@ -53,7 +60,19 @@ inputs and recommendations must not be rewritten.
 
 ## Quick start
 
-Python 3.12 is used in CI.
+For the dashboard (Node 24; no npm dependencies):
+
+```sh
+npm ci
+npm test
+npm run build
+npm run dev
+```
+
+The preview opens at `http://127.0.0.1:8786/`. See the
+[dashboard guide](docs/DASHBOARD.md) for snapshots and deployment.
+
+For the existing research scripts, Python 3.12 is used in CI.
 
 ```sh
 python3 -m venv .venv
@@ -144,8 +163,9 @@ opposing player's fantasy points.
 - [Historical opponent-injury research proposal](reports/2026-opponent-injury-signal-proposal.md)
 - [Historical draft decision protocol](reports/2026-draft-decision-protocol.md)
 
-The next step is a source-verified weekly opponent-injury comparison for a
-small set of candidate starters. A working comparison must distinguish unknown
+The next step is to verify a current injury source and try the prototype on a
+real weekly shortlist, connecting the research pipeline to its input format.
+A working comparison must distinguish unknown
 coverage from a healthy defense and possible matchup relevance from a measured
 fantasy advantage. See the [current direction](docs/PRODUCT.md).
 

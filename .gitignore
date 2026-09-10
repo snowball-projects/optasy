@@ -10,6 +10,8 @@ __pycache__/
 
 config/league.yaml
 data/
+dist/
+node_modules/
 *.sqlite
 *.sqlite-shm
 *.sqlite-wal

@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.2.0 - 2026-09-10
+
+- Transfer the canonical public repository to `snowball-projects/optasy` and
+  retire the duplicate private GitHub companion after preservation and approval.
+- Record that the draft passed without useful Optasy assistance; focus active
+  development on opposing defensive injuries for weekly lineup decisions.
+- Add a static dashboard with fictional examples, candidate comparisons,
+  manual injury entry and validated local JSON import/download. Flag unknown
+  coverage and older reports; exclude post-kickoff evidence. No automatic live
+  feed, fantasy-point adjustment or start/sit ranking is claimed.
+- Add a project icon, ten dashboard checks and GitHub Pages deployment. Preserve
+  the existing Python implementation, tests and frozen research artifacts.
+
 ## 0.1.1 - 2026-09-07
 
 - License original software and associated documentation under MIT and update
