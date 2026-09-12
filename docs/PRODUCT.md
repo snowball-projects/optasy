@@ -92,8 +92,11 @@ projections or proven start/sit gains.
 On September 10, 2026, the owner approved and completed the transfer of the
 existing public repository to `snowball-projects/optasy`, preserving history
 and releases. The duplicate `adelevski/optasy-private` GitHub repository was
-deleted after the reviewed preservation notes were verified. Its local checkout,
-credentials and research/league inputs remain private and untouched.
+deleted after the reviewed preservation notes were verified. During the
+separately authorized September 11 local cleanup, the old local checkout and its
+retained private configuration and research/league inputs were preserved in a
+private archive before the superseded folder was removed. Those inputs are not
+public deployment assets.
 
 optasy is one peer project on snowball's website, opening the deployed prototype.
 Historical research and source documentation remain canonical in this repository.

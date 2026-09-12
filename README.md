@@ -177,3 +177,5 @@ available under the [MIT License](LICENSE). See [NOTICE](NOTICE) for
 source attribution. Third-party packages and data remain under their respective
 licenses and terms; private inputs and generated artifacts excluded from this
 repository are not included in the license grant.
+
+[Operations](https://snowball-projects.github.io/operations/#optasy)
