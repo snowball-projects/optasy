@@ -1,0 +1,5 @@
+game_id,season,game_type,week,gameday,gametime,away_team,home_team,away_score,home_score
+fiction-2026-1,2026,REG,1,2026-09-13,13:00,CHI,CAR,,
+fiction-2026-2,2026,REG,2,2026-09-20,,CAR,CHI,,
+fiction-2026-wc,2026,WC,19,2027-01-16,16:30,CHI,CAR,,
+fiction-2025-1,2025,REG,1,2025-09-07,13:00,CHI,CAR,10,20

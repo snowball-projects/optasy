@@ -1,427 +1,734 @@
+import { parseFeed } from "./feed.mjs";
 import {
-  TEAMS,
-  POSITIONS,
-  ROLES,
-  STATUSES,
-  PRACTICES,
-  validateSnapshot,
+  searchPlayers,
+  currentWeek,
   comparePlayer,
-  newSnapshot,
+  MAX_SELECTIONS,
+  safeUrl,
 } from "./model.mjs";
 
 const $ = (id) => document.getElementById(id);
-let data,
-  selected = new Set(),
-  currentWeek = 1,
-  pendingReplace,
-  injuryTeam,
-  edited = false;
-const node = (tag, text, className) => {
-  const n = document.createElement(tag);
-  if (text !== undefined) n.textContent = text;
-  if (className) n.className = className;
-  return n;
-};
-const displayTime = (value) =>
-  new Date(value).toLocaleString(undefined, {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-    timeZoneName: "short",
-  });
-const localTime = (value) => {
-  const d = new Date(value);
-  return new Date(d.getTime() - d.getTimezoneOffset() * 60000)
-    .toISOString()
-    .slice(0, 16);
-};
-const option = (value, label = value) => {
-  const n = node("option", label);
-  n.value = value;
-  return n;
-};
-const message = (text) => {
+const STORAGE_KEY = "optasy.selected.v2";
+let feed = null,
+  selected = [],
+  weekKey = "",
+  activeMode = "live",
+  loading = false;
+let lastCheck = 0,
+  autoWeek = true,
+  lastError = "";
+const dateTime = new Intl.DateTimeFormat(undefined, {
+  month: "short",
+  day: "numeric",
+  hour: "numeric",
+  minute: "2-digit",
+  timeZoneName: "short",
+});
+const day = new Intl.DateTimeFormat(undefined, {
+  month: "short",
+  day: "numeric",
+  year: "numeric",
+  timeZone: "UTC",
+});
+function node(tag, text, className) {
+  const el = document.createElement(tag);
+  if (text !== undefined) el.textContent = text;
+  if (className) el.className = className;
+  return el;
+}
+function button(text, action, className) {
+  const el = node("button", text, className);
+  el.type = "button";
+  el.addEventListener("click", action);
+  return el;
+}
+function link(label, url) {
+  const el = node("a", label);
+  if (safeUrl(url)) {
+    el.href = url;
+    el.rel = "noopener noreferrer";
+  }
+  return el;
+}
+function time(value) {
+  return value ? dateTime.format(new Date(value)) : "not supplied";
+}
+function vintage(item) {
+  if (item.reported_at) return time(item.reported_at);
+  if (item.reported_date)
+    return (
+      day.format(new Date(item.reported_date + "T00:00:00Z")) +
+      " (time not supplied)"
+    );
+  return "not supplied";
+}
+function announce(text) {
   $("message").textContent = text;
-};
-const button = (label, action, className) => {
-  const b = node("button", label, className);
-  b.type = "button";
-  b.addEventListener("click", action);
-  return b;
-};
-
-for (let w = 1; w <= 18; w++) $("week").append(option(w, String(w)));
-for (const [id, values] of [
-  ["player-position", POSITIONS],
-  ["player-team", TEAMS],
-  ["player-opponent", TEAMS],
-  ["defender-role", ROLES],
-  ["defender-status", STATUSES],
-  ["defender-practice", PRACTICES],
-])
-  for (const v of values) $(id).append(option(v));
-for (const b of document.querySelectorAll("[data-close]"))
-  b.addEventListener("click", () => $(b.dataset.close).close());
-$("about-open").addEventListener("click", () => $("about").showModal());
-for (const id of ["search", "position"])
-  $(id).addEventListener("input", renderPlayers);
-$("week").addEventListener("change", () => {
-  currentWeek = Number($("week").value);
-  render();
-});
-
-function apply(snapshot) {
-  data = validateSnapshot(snapshot);
-  selected = new Set(data.players.slice(0, 3).map((p) => p.id));
-  currentWeek = data.games[0]?.week || 1;
-  $("week").value = currentWeek;
-  $("search").value = "";
-  $("position").value = "";
-  edited = false;
-  message("");
-  render();
 }
-function replace(snapshot) {
-  if (edited || (data?.kind === "user" && data.players.length)) {
-    pendingReplace = snapshot;
-    $("replace-dialog").showModal();
-  } else apply(snapshot);
-}
-$("confirm-replace").addEventListener("click", () => {
-  apply(pendingReplace);
-  pendingReplace = null;
-  $("replace-dialog").close();
-});
-$("new").addEventListener("click", () => replace(newSnapshot()));
-$("sample").addEventListener("click", loadSample);
-async function loadSample() {
+function readSelection() {
   try {
-    const response = await fetch("./sample.json");
-    if (!response.ok)
-      throw new Error(
-        "Example could not be loaded. Start a new snapshot instead.",
-      );
-    const sample = await response.json();
-    data ? replace(sample) : apply(sample);
-  } catch (error) {
-    if (!data) apply(newSnapshot());
-    message(error.message);
+    const value = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    return Array.isArray(value)
+      ? [
+          ...new Set(
+            value.filter((id) => typeof id === "string" && id.length <= 120),
+          ),
+        ].slice(0, MAX_SELECTIONS)
+      : [];
+  } catch {
+    return [];
   }
 }
-$("import").addEventListener("change", async (event) => {
-  const file = event.target.files[0];
+function saveSelection() {
+  if (activeMode !== "live") return;
   try {
-    if (!file) return;
-    if (file.size > 2000000)
-      throw new Error("Choose a JSON snapshot smaller than 2 MB.");
-    const snapshot = validateSnapshot(JSON.parse(await file.text()));
-    replace(snapshot);
-  } catch (error) {
-    message(
-      `Could not import: ${error instanceof SyntaxError ? "the file is not valid JSON." : error.message}`,
-    );
-  } finally {
-    event.target.value = "";
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(selected));
+  } catch {
+    /* Storage is optional. */
   }
-});
-function download() {
-  if (!data) return;
-  const url = URL.createObjectURL(
-    new Blob([JSON.stringify(data, null, 2) + "\n"], {
-      type: "application/json",
-    }),
-  );
-  const a = node("a");
-  a.href = url;
-  a.download = `optasy-${data.kind}-${data.season}-${new Date().toISOString().replaceAll(":", "-")}.json`;
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-  message("Snapshot downloaded. It can be imported again.");
 }
-$("export").addEventListener("click", download);
-$("save-before-replace").addEventListener("click", download);
-
-function renderPlayers() {
-  if (!data) return;
-  const q = $("search").value.trim().toLowerCase(),
-    pos = $("position").value;
-  const players = data.players.filter(
-    (p) =>
-      (!pos || p.position === pos) &&
-      `${p.name} ${p.team}`.toLowerCase().includes(q),
-  );
-  $("players").replaceChildren();
-  for (const p of players) {
-    const label = node(
-      "label",
-      undefined,
-      `player-choice${selected.has(p.id) ? " selected" : ""}`,
-    );
-    const check = node("input");
-    check.type = "checkbox";
-    check.checked = selected.has(p.id);
-    const copy = node("span", undefined, "player-copy");
-    copy.append(
-      node("strong", p.name),
-      node("small", `${p.position} · ${p.team}`),
-    );
-    check.addEventListener("change", () => {
-      check.checked ? selected.add(p.id) : selected.delete(p.id);
-      label.classList.toggle("selected", check.checked);
-      renderComparisons();
-    });
-    label.append(check, copy);
-    $("players").append(label);
-  }
-  if (!players.length)
-    $("players").append(
-      node(
-        "p",
-        data.players.length
-          ? "No matching candidates."
-          : "Add your first candidate with +.",
-        "privacy",
-      ),
-    );
+function sourceFor(id) {
+  return feed.sources.find((source) => source.id === id);
 }
-function render() {
-  $("season").textContent = `${data.season} · Week ${currentWeek}`;
-  $("mode").textContent =
-    data.kind === "sample" ? "Sample data" : "Your snapshot";
-  $("mode").classList.toggle("user", data.kind !== "sample");
-  $("dataset-note").textContent =
-    data.kind === "sample"
-      ? "Fictional players, injuries and matchups. Start a new snapshot for your own lineup."
-      : `${data.label} · Snapshot ${displayTime(data.captured_at)} · No automatic live feed.`;
-  renderPlayers();
-  renderComparisons();
+function closeSearch() {
+  $("search-results").hidden = true;
 }
-function renderComparisons() {
-  $("comparisons").replaceChildren();
-  const players = data.players.filter((p) => selected.has(p.id));
-  if (!players.length) {
-    const empty = node("div", undefined, "empty");
-    empty.append(
-      node("strong", "Choose players to compare"),
-      node(
-        "p",
-        "Select candidates from your shortlist, or add a player and this week’s opponent.",
-      ),
-    );
-    $("comparisons").append(empty);
+function renderSearch() {
+  const list = $("search-results");
+  const focusId = document.activeElement.dataset.playerId;
+  list.replaceChildren();
+  if (!feed || !$("search").value.trim()) {
+    closeSearch();
     return;
   }
-  for (const p of players) {
-    const result = comparePlayer(data, p, currentWeek);
-    const card = node("article", undefined, "comparison-card"),
-      intro = node("div", undefined, "candidate");
-    intro.append(node("h3", p.name), node("span", p.position, "position"));
-    if (result.game) {
-      intro.append(
-        node("div", `${p.team} / ${result.opponent}`, "matchup"),
-        node("span", displayTime(result.game.kickoff), "kickoff"),
+  const matches = searchPlayers(feed, $("search").value, selected).slice(0, 20);
+  list.hidden = false;
+  if (!matches.length)
+    list.append(
+      node(
+        "p",
+        "No matching rostered players. Try a name or team abbreviation.",
+        "search-empty",
+      ),
+    );
+  if (selected.length >= MAX_SELECTIONS)
+    list.append(
+      node(
+        "p",
+        "Six players selected. Remove one to add another.",
+        "search-empty",
+      ),
+    );
+  for (const player of matches) {
+    const chosen = selected.includes(player.id);
+    const choice = button("", () => addPlayer(player), "search-choice");
+    choice.dataset.playerId = player.id;
+    choice.disabled = chosen || selected.length >= MAX_SELECTIONS;
+    choice.setAttribute(
+      "aria-label",
+      (chosen ? "Selected: " : "Add ") +
+        player.name +
+        ", " +
+        player.team +
+        ", " +
+        player.position,
+    );
+    const info = node("span", undefined, "player-info");
+    info.append(node("strong", player.name));
+    const roster =
+      player.roster_status !== "active"
+        ? " · " + player.roster_status.replaceAll("-", " ")
+        : "";
+    info.append(node("small", player.team + " · " + player.position + roster));
+    choice.append(info, node("span", chosen ? "Added" : "+", "add"));
+    list.append(choice);
+    if (focusId === player.id) choice.focus({ preventScroll: true });
+  }
+  $("search-status").textContent =
+    matches.length +
+    " matching players shown. Use Tab or Down Arrow to reach results.";
+}
+function addPlayer(player) {
+  player = feed.players.find((candidate) => candidate.id === player.id);
+  if (!player) {
+    renderSearch();
+    announce("That player is no longer in the current roster source.");
+    return;
+  }
+  if (selected.includes(player.id) || selected.length >= MAX_SELECTIONS) return;
+  selected.push(player.id);
+  saveSelection();
+  $("search").value = "";
+  closeSearch();
+  renderCards();
+  announce(player.name + " added.");
+  $("search").focus();
+}
+function removePlayer(id, name) {
+  const index = selected.indexOf(id);
+  selected = selected.filter((value) => value !== id);
+  saveSelection();
+  renderCards();
+  announce(name + " removed.");
+  const removes = [...document.querySelectorAll(".remove")];
+  (removes[Math.min(index, removes.length - 1)] || $("search")).focus();
+}
+function renderWeeks() {
+  const select = $("week");
+  select.replaceChildren();
+  const current = currentWeek(feed);
+  if (activeMode === "example") {
+    if (!weekKey) weekKey = feed.weeks.at(-1)?.key || "";
+  } else if (autoWeek || !feed.weeks.some((week) => week.key === weekKey)) {
+    weekKey = current?.key || "";
+  }
+  if (!weekKey) {
+    const option = node("option", "Current week unavailable");
+    option.value = "";
+    select.append(option);
+  }
+  for (const week of feed.weeks) {
+    const option = node(
+      "option",
+      week.label +
+        (activeMode === "live" && current?.key === week.key
+          ? " · current"
+          : ""),
+    );
+    option.value = week.key;
+    select.append(option);
+  }
+  select.value = weekKey;
+  select.disabled = feed.weeks.length === 0;
+  const season = feed.weeks.find((week) => week.key === weekKey)?.season;
+  document.querySelector('label[for="week"]').textContent =
+    "NFL week" + (season ? " · " + season : "");
+}
+function renderStatus(error = lastError) {
+  const status = $("data-status");
+  status.replaceChildren();
+  status.className = "notice";
+  if (error) {
+    status.classList.add("warning");
+    const retained =
+      feed && activeMode === "example"
+        ? "Current NFL data is unavailable. The fictional example is still shown; these players, games and injuries are invented. "
+        : feed
+          ? "Refresh unavailable. Showing the previously loaded data; check its collection time. "
+          : "Current NFL data is unavailable. ";
+    status.append(node("p", retained + error));
+    status.append(button("Try again", () => loadFeed("live")));
+    if (!feed)
+      status.append(button("Try fictional example", () => loadFeed("example")));
+    return;
+  }
+  if (activeMode === "example") {
+    status.classList.add("warning");
+    status.append(
+      node(
+        "p",
+        "Fictional example. Players, matchups and injuries below are invented; this is not current NFL data.",
+      ),
+    );
+    status.append(button("Back to NFL players", () => loadFeed("live")));
+    return;
+  }
+  const age = (Date.now() - Date.parse(feed.generated_at)) / 3600000;
+  if (age > 24) status.classList.add("warning");
+  const prefix = age > 24 ? "Collection is over 24 hours old. " : "";
+  status.append(
+    node(
+      "p",
+      prefix +
+        "NFL reports via nflverse. Injury files update daily; the source does not supply report timestamps.",
+    ),
+  );
+  status.append(node("span", "Collected " + time(feed.generated_at), "small"));
+}
+function renderSources() {
+  const details = $("source-details");
+  details.replaceChildren();
+  if (!feed) {
+    details.append(
+      node(
+        "p",
+        "Current roster, schedule and injury data could not be loaded.",
+      ),
+    );
+  } else {
+    details.append(
+      node(
+        "p",
+        activeMode === "example"
+          ? "This fixture was created by snowball to demonstrate search, complete reports and missing-data states."
+          : "One shared collection runs hourly, subject to GitHub Actions delays. nflverse injury and roster files normally update once daily; its schedule updates more often. An hourly download cannot make a daily report live. nflverse data are used under CC BY 4.0; optasy filters roster membership, normalizes fields and joins weekly opponents. No endorsement is implied.",
+      ),
+    );
+    for (const [label, meta] of [
+      ["Roster", feed.roster],
+      ["Schedule", feed.schedule],
+    ]) {
+      const source = sourceFor(meta.source_id);
+      const row = node("p", undefined, "source-meta");
+      row.append(
+        node("strong", label + ": "),
+        link(source.label, source.url),
+        document.createTextNode(
+          " · source vintage " +
+            vintage(meta) +
+            " · file updated " +
+            time(meta.source_updated_at) +
+            " · collected " +
+            time(meta.retrieved_at) +
+            ".",
+        ),
       );
-      intro.append(button("Add injury", () => openInjury(result.opponent)));
-    } else intro.append(node("div", p.team, "matchup"));
+      details.append(row);
+    }
+    for (const source of feed.sources) {
+      const row = node("p", undefined, "source-meta");
+      row.append(
+        link(source.label, source.url),
+        document.createTextNode(" · "),
+        link(
+          activeMode === "example" ? "Source & license" : "Data license",
+          source.terms_url,
+        ),
+      );
+      details.append(row);
+    }
+    details.append(
+      node(
+        "p",
+        "Report vintage is when the underlying injury report was issued. File update is when the publisher changed its download. Collection is when optasy retrieved it. These are separate facts. Unknown vintage or missing entries never establish a healthy opponent.",
+      ),
+    );
+  }
+  details.append(
+    link(
+      "Source review and operating limits",
+      "https://github.com/snowball-projects/optasy/blob/main/docs/DATA_SOURCES.md",
+    ),
+  );
+  details.append(
+    node(
+      "p",
+      "Selections are stored only in this browser. Search makes no requests to data providers. No accounts, league connections or analytics.",
+    ),
+  );
+}
+function renderEntry(entry) {
+  const item = node("li", undefined, "injury");
+  const row = node("div", undefined, "injury-main");
+  row.append(node("span", entry.position, "role"));
+  const info = node("div");
+  info.append(node("p", entry.name, "injury-name"));
+  info.append(
+    node(
+      "p",
+      (entry.injury || "Injury not supplied") +
+        " · Practice: " +
+        entry.practice_status,
+      "injury-detail",
+    ),
+  );
+  row.append(info);
+  const gameLabel =
+    entry.game_status === "Not listed"
+      ? "No game designation"
+      : entry.game_status === "Unknown"
+        ? "Game status unknown"
+        : entry.game_status;
+  const status = node(
+    "span",
+    gameLabel,
+    "status" +
+      (entry.game_status === "Out"
+        ? " absent"
+        : ["Not listed", "Unknown"].includes(entry.game_status)
+          ? " unknown"
+          : ""),
+  );
+  status.title = "Reported game designation";
+  row.append(status);
+  item.append(row);
+  const context = node("details", undefined, "injury-context");
+  context.dataset.entryId = entry.id;
+  context.append(
+    node(
+      "summary",
+      entry.relevance ? "Possible role relevance" : "Status context",
+    ),
+  );
+  if (entry.relevance)
+    context.append(
+      node(
+        "p",
+        entry.relevance +
+          ". A broad positional possibility; individual assignment and fantasy impact are not established.",
+      ),
+    );
+  if (entry.availability) context.append(node("p", entry.availability));
+  if (entry.status_source !== "official")
+    context.append(
+      node(
+        "p",
+        "Official game and practice designations are not established by this source.",
+      ),
+    );
+  else
+    context.append(
+      node(
+        "p",
+        "Game and practice designations as supplied by the report source. Full practice or no game designation is not a guarantee of participation.",
+      ),
+    );
+  if (entry.roster_status !== "active" && entry.roster_status !== "unknown")
+    context.append(
+      node(
+        "p",
+        "Roster status: " + entry.roster_status.replaceAll("-", " ") + ".",
+      ),
+    );
+  if (entry.note) context.append(node("p", entry.note));
+  item.append(context);
+  return item;
+}
+function renderCards() {
+  const cards = $("cards");
+  const open = new Set(
+    [...cards.querySelectorAll("details[open]")].map(
+      (el) => el.closest("article").dataset.playerId + "/" + el.dataset.entryId,
+    ),
+  );
+  const focused = document.activeElement;
+  const focusedPlayer = focused.closest("article")?.dataset.playerId;
+  const focusedEntry = focused.closest("details")?.dataset.entryId;
+  const focusedRemove = focused.classList.contains("remove");
+  cards.replaceChildren();
+  $("selection-count").textContent =
+    selected.length + " / " + MAX_SELECTIONS + " players";
+  if (!selected.length) {
+    const empty = node("div", undefined, "empty");
+    const mark = node("span", "↗", "empty-mark");
+    mark.setAttribute("aria-hidden", "true");
+    empty.append(
+      mark,
+      node("h3", "Start with a player"),
+      node(
+        "p",
+        "The matchup and full available opponent report will appear here.",
+      ),
+    );
+    cards.append(empty);
+    return;
+  }
+  for (const id of selected) {
+    const player = feed.players.find((value) => value.id === id);
+    const card = node("article", undefined, "player-card");
+    card.dataset.playerId = id;
+    const heading = node("div", undefined, "card-heading");
+    const identity = node("div", undefined, "identity");
+    const name = player?.name || "Player no longer in current roster";
+    identity.append(node("h3", name));
+    if (player)
+      identity.append(
+        node(
+          "p",
+          player.team +
+            " · " +
+            player.position +
+            (player.roster_status === "active"
+              ? ""
+              : " · " + player.roster_status.replaceAll("-", " ")),
+          "position",
+        ),
+      );
+    heading.append(identity);
+    const matchup = node("div", undefined, "matchup-area");
+    const remove = button("×", () => removePlayer(id, name), "remove");
+    remove.setAttribute("aria-label", "Remove " + name);
     const evidence = node("div", undefined, "evidence");
-    const meta = node("div", undefined, "report-meta");
-    if (result.started)
-      meta.append(node("span", "Game started · historical context", "flag"));
-    if (result.report) {
-      const r = result.report;
-      meta.append(
+    if (player) {
+      const result = comparePlayer(feed, player, weekKey);
+      const opponent = node("div");
+      opponent.append(
         node(
-          "span",
-          `${r.coverage === "reviewed" ? "User-reviewed" : r.coverage === "partial" ? "Partial" : "Unknown"} coverage`,
+          "p",
+          result.opponent
+            ? "vs " + result.opponent
+            : result.state === "bye"
+              ? "Bye week"
+              : "Opponent unknown",
+          "matchup",
         ),
       );
-      meta.append(node("span", displayTime(r.observed_at)));
-      if (result.stale)
-        meta.append(node("span", "Older than 48h · check for updates", "flag"));
-      if (r.url) {
-        const link = node("a", `${r.source} ↗`);
-        link.href = r.url;
-        link.target = "_blank";
-        link.rel = "noopener noreferrer";
-        meta.append(link);
-      } else meta.append(node("span", r.source));
+      if (result.game) {
+        const state = result.game.status;
+        let kickoff = result.game.kickoff
+          ? time(result.game.kickoff)
+          : "Kickoff to be announced";
+        if (["postponed", "canceled", "tbd"].includes(state))
+          kickoff =
+            state.charAt(0).toUpperCase() + state.slice(1) + " · " + kickoff;
+        else if (state === "final") kickoff = "Final · " + kickoff;
+        else if (result.started) kickoff = "Game has started · " + kickoff;
+        opponent.append(node("p", kickoff, "kickoff"));
+      }
+      matchup.append(opponent);
+      if (result.rosterStale)
+        evidence.append(
+          node(
+            "p",
+            "Roster file or collection is over 24 hours old; the player’s team may have changed.",
+            "report-warning",
+          ),
+        );
+      if (result.scheduleStale)
+        evidence.append(
+          node(
+            "p",
+            "Schedule file or collection is over 24 hours old. Kickoff and opponent may have changed.",
+            "report-warning",
+          ),
+        );
+      if (result.report) {
+        const report = result.report;
+        const title = node("div", undefined, "report-heading");
+        title.append(
+          node("strong", result.opponent + " injury report"),
+          node(
+            "span",
+            "All " +
+              report.entries.length +
+              " available entries · " +
+              (report.coverage === "complete"
+                ? "complete source report"
+                : "coverage " + report.coverage),
+            "coverage",
+          ),
+        );
+        evidence.append(title);
+        const meta = node("div", undefined, "meta");
+        const source = sourceFor(report.source_id);
+        meta.append(
+          link(source.label, source.url),
+          node("span", "Report vintage: " + vintage(report)),
+        );
+        if (report.source_updated_at)
+          meta.append(
+            node("span", "File updated: " + time(report.source_updated_at)),
+          );
+        meta.append(node("span", "Collected: " + time(report.retrieved_at)));
+        evidence.append(meta);
+        if (!report.reported_at && !report.reported_date)
+          evidence.append(
+            node(
+              "p",
+              "Report date and time are not supplied. Current game availability cannot be confirmed from this file.",
+              "report-warning",
+            ),
+          );
+        if (result.stale)
+          evidence.append(
+            node(
+              "p",
+              "This report is old. Check the source before relying on its statuses.",
+              "report-warning",
+            ),
+          );
+        if (result.sourceFileStale)
+          evidence.append(
+            node(
+              "p",
+              "The source injury file is over 24 hours old, even if collected recently.",
+              "report-warning",
+            ),
+          );
+        if (result.sourceFileUnknown)
+          evidence.append(
+            node(
+              "p",
+              "Source file update time is not supplied; file freshness is unknown.",
+              "report-warning",
+            ),
+          );
+        if (result.retrievalStale)
+          evidence.append(
+            node(
+              "p",
+              "Collection is over 24 hours old. Newer reports may be missing.",
+              "report-warning",
+            ),
+          );
+        if (result.started)
+          evidence.append(
+            node(
+              "p",
+              "This game has started. This report is context, not a preserved pre-game recommendation.",
+              "report-warning",
+            ),
+          );
+        if (result.reportedAfterKickoff)
+          evidence.append(
+            node(
+              "p",
+              "Report issued at or after kickoff; not pre-game evidence.",
+              "report-warning",
+            ),
+          );
+        evidence.append(node("p", result.message, "report-message"));
+        const entries = node("ul", undefined, "injury-list");
+        entries.setAttribute(
+          "aria-label",
+          result.opponent + " complete available injury entries",
+        );
+        for (const entry of result.entries) entries.append(renderEntry(entry));
+        evidence.append(entries);
+      } else evidence.append(node("p", result.message, "report-message"));
+    } else {
+      evidence.append(
+        node(
+          "p",
+          "This saved identity is absent from the latest roster source. Search again to confirm current team membership.",
+          "report-message",
+        ),
+      );
     }
-    evidence.append(meta);
-    for (const d of result.defenders) {
-      const detail = node("details", undefined, "defender"),
-        summary = node("summary");
-      summary.append(
-        node("span", d.role, "role"),
-        node("span", d.name, "defender-name"),
-        node("span", d.status, `status${d.absent ? " absent" : ""}`),
-        node("span", "+", "expand"),
-      );
-      const info = node("div", undefined, "defender-info");
-      info.append(
-        node(
-          "p",
-          `Possible relevance: ${d.relevance.toLowerCase()}.`,
-          "relevance",
-        ),
-      );
-      info.append(
-        node(
-          "p",
-          `Practice: ${d.practice.toLowerCase()} · Prior snap share: ${d.snap_share === null ? "unknown" : `${d.snap_share}%`}`,
-        ),
-      );
-      info.append(
-        node(
-          "p",
-          `Replacement: ${d.replacement || "unknown"}. Quality difference not estimated.`,
-        ),
-      );
-      if (d.note) info.append(node("p", d.note));
-      detail.append(summary, info);
-      evidence.append(detail);
+    matchup.append(remove);
+    heading.append(matchup);
+    card.append(heading, evidence);
+    cards.append(card);
+    for (const detail of card.querySelectorAll("details"))
+      detail.open = open.has(id + "/" + detail.dataset.entryId);
+    if (focusedPlayer === id) {
+      if (focusedRemove) remove.focus({ preventScroll: true });
+      else if (focusedEntry)
+        [...card.querySelectorAll("details")]
+          .find((el) => el.dataset.entryId === focusedEntry)
+          ?.querySelector("summary")
+          .focus({ preventScroll: true });
     }
-    evidence.append(node("p", result.message, "evidence-note"));
-    card.append(intro, evidence);
-    $("comparisons").append(card);
   }
 }
-
-const playerForm = $("player-form");
-function syncGame() {
-  const game = data.games.find(
-    (g) =>
-      g.week === currentWeek &&
-      [g.home, g.away].includes(playerForm.elements.team.value),
-  );
-  playerForm.elements.opponent.disabled = Boolean(game);
-  playerForm.elements.kickoff.readOnly = Boolean(game);
-  if (game) {
-    playerForm.elements.opponent.value =
-      game.home === playerForm.elements.team.value ? game.away : game.home;
-    playerForm.elements.kickoff.value = localTime(game.kickoff);
-  }
-}
-playerForm.elements.team.addEventListener("change", syncGame);
-$("add-player-open").addEventListener("click", () => {
-  playerForm.reset();
-  $("player-error").textContent = "";
-  $("player-week").textContent = currentWeek;
-  playerForm.elements.season.value = data.season;
-  playerForm.elements.season.readOnly = Boolean(
-    data.players.length || data.games.length || data.reports.length,
-  );
-  syncGame();
-  $("player-dialog").showModal();
-});
-playerForm.addEventListener("submit", (event) => {
-  event.preventDefault();
+async function loadFeed(mode, background = false) {
+  if (loading) return;
+  loading = true;
   try {
-    const v = Object.fromEntries(new FormData(playerForm)),
-      copy = structuredClone(data);
-    const game = copy.games.find(
-      (g) => g.week === currentWeek && [g.home, g.away].includes(v.team),
+    const response = await fetch(
+      mode === "example" ? "./example.json" : "./current.json",
+      { cache: "no-cache", signal: AbortSignal.timeout(15000) },
     );
-    if (!game)
-      copy.games.push({
-        week: currentWeek,
-        home: v.opponent,
-        away: v.team,
-        kickoff: new Date(v.kickoff).toISOString(),
-      });
-    if (
-      copy.players.some(
-        (p) =>
-          p.name.toLowerCase() === v.name.trim().toLowerCase() &&
-          p.team === v.team,
-      )
-    )
-      throw new Error("That candidate is already in your shortlist.");
-    const player = {
-      id: crypto.randomUUID(),
-      name: v.name.trim(),
-      position: v.position,
-      team: v.team,
-    };
-    copy.players.push(player);
-    copy.season = Number(v.season);
-    copy.captured_at = new Date().toISOString();
-    validateSnapshot(copy);
-    data = copy;
-    selected.add(player.id);
-    edited = true;
-    $("search").value = "";
-    $("position").value = "";
-    $("player-dialog").close();
-    render();
-    message("Candidate added.");
-  } catch (error) {
-    $("player-error").textContent = error.message;
-  }
-});
-
-const injuryForm = $("injury-form");
-function openInjury(team) {
-  injuryTeam = team;
-  injuryForm.reset();
-  $("injury-error").textContent = "";
-  $("injury-title").textContent = `${team} · Week ${currentWeek}`;
-  const report = data.reports.find(
-    (r) => r.week === currentWeek && r.team === team,
-  );
-  for (const key of ["source", "url", "observed_at"])
-    injuryForm.elements[key].readOnly = Boolean(report);
-  injuryForm.elements.source.value = report?.source || "";
-  injuryForm.elements.url.value = report?.url || "";
-  injuryForm.elements.observed_at.value = localTime(
-    report?.observed_at || new Date(),
-  );
-  injuryForm.elements.status.value = "Unknown";
-  injuryForm.elements.practice.value = "Unknown";
-  $("injury-source-note").textContent = report
-    ? "Adds to this team’s existing source vintage. Import a new snapshot to use a later report; old evidence is not silently retimestamped."
-    : "Use the report’s timestamp. A manual entry has partial coverage.";
-  $("injury-dialog").showModal();
-}
-injuryForm.addEventListener("submit", (event) => {
-  event.preventDefault();
-  try {
-    const v = Object.fromEntries(new FormData(injuryForm)),
-      copy = structuredClone(data);
-    let report = copy.reports.find(
-      (r) => r.week === currentWeek && r.team === injuryTeam,
-    );
-    if (!report) {
-      report = {
-        week: currentWeek,
-        team: injuryTeam,
-        source: v.source.trim(),
-        url: v.url.trim(),
-        observed_at: new Date(v.observed_at).toISOString(),
-        coverage: "partial",
-        defenders: [],
-      };
-      copy.reports.push(report);
+    if (!response.ok)
+      throw new Error("The shared data file could not be retrieved.");
+    const content = await response.text();
+    const next = parseFeed(content);
+    if (next.mode !== mode)
+      throw new Error("The data file has an unexpected mode.");
+    if (mode !== activeMode || !feed) {
+      selected = mode === "live" ? readSelection() : [];
+      weekKey = "";
+      autoWeek = true;
     }
-    report.defenders.push({
-      name: v.name.trim(),
-      role: v.role,
-      status: v.status,
-      practice: v.practice,
-      snap_share: v.snap_share === "" ? null : Number(v.snap_share),
-      replacement: v.replacement.trim(),
-      note: v.note.trim(),
-    });
-    copy.captured_at = new Date().toISOString();
-    validateSnapshot(copy);
-    data = copy;
-    edited = true;
-    $("injury-dialog").close();
-    render();
-    message("Injury added. Download the snapshot to keep your entries.");
+    activeMode = mode;
+    feed = next;
+    lastError = "";
+    $("search").disabled = false;
+    $("search").placeholder =
+      mode === "example" ? "Try Kai, BUF or WR" : "Name, team or position";
+    document.querySelector('label[for="search"]').textContent =
+      mode === "example" ? "Find a fictional player" : "Find an NFL player";
+    $("search-help").textContent =
+      mode === "example"
+        ? "Fictional players only. Choose up to six."
+        : "Choose up to six. Injured rostered players are included.";
+    renderWeeks();
+    renderStatus();
+    renderSources();
+    renderCards();
+    if (background && !$("search-results").hidden) renderSearch();
+    if (!background) {
+      $("search").value = "";
+      closeSearch();
+      announce("");
+    }
   } catch (error) {
-    $("injury-error").textContent = error.message;
+    lastError =
+      error.name === "TimeoutError" ? "The request timed out." : error.message;
+    renderStatus();
+    if (!feed) {
+      $("search").disabled = true;
+      $("week").disabled = true;
+      renderSources();
+    }
+  } finally {
+    loading = false;
+    lastCheck = Date.now();
+  }
+}
+$("search").addEventListener("input", renderSearch);
+$("search").addEventListener("focus", renderSearch);
+$("search").addEventListener("keydown", (event) => {
+  if (event.key === "ArrowDown") {
+    renderSearch();
+    const first = $("search-results").querySelector("button:not(:disabled)");
+    if (first) {
+      event.preventDefault();
+      first.focus();
+    }
+  }
+  if (event.key === "Escape") closeSearch();
+});
+$("search-results").addEventListener("keydown", (event) => {
+  if (event.key === "Escape") {
+    closeSearch();
+    $("search").focus();
+    closeSearch();
+    return;
+  }
+  if (!["ArrowDown", "ArrowUp"].includes(event.key)) return;
+  event.preventDefault();
+  const choices = [
+    ...$("search-results").querySelectorAll("button:not(:disabled)"),
+  ];
+  const index = choices.indexOf(document.activeElement);
+  const next = event.key === "ArrowDown" ? index + 1 : index - 1;
+  if (next < 0) $("search").focus();
+  else choices[Math.min(next, choices.length - 1)]?.focus();
+});
+document.addEventListener("pointerdown", (event) => {
+  if (!event.target.closest(".search-area")) closeSearch();
+});
+document.addEventListener("focusin", (event) => {
+  if (!event.target.closest(".search-area")) closeSearch();
+});
+$("week").addEventListener("change", () => {
+  weekKey = $("week").value;
+  autoWeek = false;
+  renderCards();
+  announce("Opponent reports updated for the selected week.");
+});
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden && activeMode === "live") {
+    renderWeeksIfLoaded();
+    if (Date.now() - lastCheck > 300000) loadFeed("live", true);
   }
 });
-
-await loadSample();
+function renderWeeksIfLoaded() {
+  if (feed) {
+    renderWeeks();
+    renderStatus();
+    renderCards();
+  }
+}
+// A visible tab must cross kickoff/week/freshness boundaries without a provider
+// request. Keep open details and their keyboard focus while updating the clock.
+setInterval(() => {
+  if (document.hidden) return;
+  renderWeeksIfLoaded();
+  // Conditional same-origin refresh checks the shared published artifact only.
+  // It never calls a provider, even with many simultaneous visitors.
+  if (activeMode === "live" && Date.now() - lastCheck > 300000)
+    loadFeed("live", true);
+}, 60000);
+await loadFeed("live");

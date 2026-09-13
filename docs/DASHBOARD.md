@@ -1,99 +1,176 @@
-# Dashboard MVP
+# Dashboard
 
-Live: <https://snowball-projects.github.io/optasy/> · v0.2.0
+Version 0.3.0 · [Open optasy](https://snowball-projects.github.io/optasy/)
 
-The dashboard is a static, dependency-free prototype. It starts with explicitly
-fictional examples. It does not fetch current NFL injuries, projections, rosters
-or schedules, and it does not call the Python availability model.
+## Use
 
-## Use it
+Search by player name, team abbreviation or position. Choose up to six players;
+each card shows the scheduled opponent and **all available injury entries** for
+that team/game. Offense, defense and special teams stay together. Remove a
+selection with its × button. Injured, inactive and reserve roster members are
+included independently of game participation.
 
-1. Choose **New snapshot**, select the week, and use **+** to add candidates,
-   their opponents and kickoffs. Matchups for the same team/week are reused.
-   Team order is only for joining opponents; no home-field adjustment exists.
-2. Select candidates to compare. **Add injury** records an opposing defender's
-   role, status, practice participation, optional prior snap share, likely
-   replacement, source and report time. Manual reports have partial coverage.
-3. Expand a defender for possible positional relevance and context. The rules
-   are broad hypotheses, not assigned coverage matchups or measured effects.
-   No absence count, probability or fantasy-point score ranks candidates.
-4. **Download snapshot** preserves a JSON file; **Import snapshot** restores it.
-   Imports and edits stay in the tab's memory. Closing or reloading loses them
-   unless downloaded. Replacing a populated personal snapshot prompts first.
+The week defaults from the current schedule window, with an optional week
+selector. A confirmed bye differs from a missing schedule. Kickoffs display
+in the user's local timezone. New schedules replace old opponents/kickoffs
+after the next successful collection. Selections use stable player IDs, so
+transfers follow current source team membership. A saved player absent from the
+latest roster gets an explicit missing-identity card.
 
-Each team/week report has one source vintage. Additional manual entries use
-that same timestamp; adding a defender never retimestamps earlier evidence.
-Prepare/import a new snapshot for a later report. Original downloaded/imported
-files are not overwritten. Sample snapshots remain labelled as samples even
-after edits; start a new snapshot before entering a real weekly comparison.
+Selections persist only in this browser's local storage, as at most six IDs;
+removing a player updates that list. Storage failure does not prevent use.
+Search, selection and role context do not contact providers. There are no
+accounts, league settings/imports, manual report forms or roster management.
 
-The first version has no individual edit/delete controls. A correction can be
-made in a downloaded JSON copy and reimported, or entered in a new snapshot.
-Inputs are manual and not independently verified. Only enter data you may use;
-never put credentials in a snapshot. Downloaded files are not published.
+The labelled fictional example is an explicit fallback when current data cannot
+load. It never silently replaces current data. A failed attempt to return to NFL
+players keeps the fictional warning. It does not replace saved NFL selections.
 
-## Portable input
+## Report interpretation
 
-Use [the fictional example](../web/sample.json) as a complete template. The
-dashboard format is a compact presentation contract, separate from Python's
-raw-source snapshot manifests; a verified exporter is a future integration.
+Game designation and practice participation are separate. Full practice is not
+a guarantee of playing; a blank source game designation is not “healthy.”
+Expandable role context describes broad football possibilities, not individual
+coverage, replacement quality, proven fantasy effects or a start/sit decision.
 
-| Field                            | Meaning                                                                                                       |
-| -------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| `schema_version`                 | `1`                                                                                                           |
-| `kind`                           | `sample` for demonstrations; `user` for user-entered/imported data                                            |
-| `label`, `season`, `captured_at` | Snapshot name, season and timezone-aware ISO timestamp                                                        |
-| `players`                        | Unique `id`, `name`, NFL `team` abbreviation and `position` (QB/RB/WR/TE/K)                                   |
-| `games`                          | `week` (1–18), distinct `home`/`away` teams, timezone-aware `kickoff`; at most one game per team/week         |
-| `reports`                        | One entry per `week`/`team`: `source`, optional HTTPS `url`, `observed_at`, `coverage`, `defenders`           |
-| `coverage`                       | `partial`, `unknown`, or `reviewed` (user assertion, not independent verification)                            |
-| Each defender                    | `name`, `role` (CB/S/DB/EDGE/DI/DL/LB), `status`, `practice`, `snap_share`, optional `replacement` and `note` |
+All matching source rows are displayed, including rows without modeled
+defensive relevance. A row count is only a count. Source coverage remains
+`partial` because independent completeness against original team reports has
+not been established. No record for a team/game produces “coverage unknown,”
+never a fabricated empty report.
 
-Statuses: Out, Questionable, Doubtful, IR, PUP, Unknown. Practice: Unknown,
-Did not practice, Limited, Full. `snap_share` is a percentage (0–100) of prior
-defensive snaps, or `null`; it is not a probability or quality rating. Explain
-the prior workload period in the note. No probability is inferred from
-Questionable, Doubtful or practice status.
+Report publication time, source file modification and optasy collection time
+are separate fields. The current nflverse injury CSV supplies **no report date
+or time**. The interface explicitly leaves that vintage unknown, even when the
+file was freshly updated or retrieved. An undated Out row says “Reported Out;
+current availability needs confirmation.”
 
-Imports are capped at 2 MB, 1,000 players/games/reports each and 100 defenders
-per report. Duplicate IDs, games, reports and defender names are rejected.
-Source URLs require HTTPS without credentials. Text is rendered as text, never
-HTML. Reports cannot be newer than their containing snapshot; user snapshots
-cannot be future-dated beyond a five-minute clock tolerance.
+The UI flags a source file or collection older than 24 hours. If a future source
+provides exact report timestamps, report age over 48 hours is flagged; date-only
+vintage is conservatively flagged after more than three UTC calendar days.
+Roster/schedule source vintages use a 24-hour policy when supplied. These are
+operating reminders, not calibrated confidence thresholds.
 
-Only matching team/week evidence is shown. Reports at or after kickoff are
-excluded from pre-game comparisons. Started games are labelled historical.
-Reports older than 48 hours receive a review flag, an operational reminder
-rather than a validated injury-confidence threshold. Missing reports or empty
-relevant lists never imply a healthy defense. Kicker effects are not modeled.
+Started games remain readable as context, not preserved pre-game advice. An
+explicit report timestamp at/after kickoff is labelled. A report with unknown
+vintage cannot establish when the underlying information became known. Local
+clock checks update kickoff, current-week and age labels every minute without
+calling a provider.
 
-## Develop and deploy
+## Source collection
 
-Node 24, Python 3.12. The web app has no npm dependencies.
+[DATA_SOURCES.md](DATA_SOURCES.md) records the permission basis, observed
+coverage, upstream provenance limits and source/free-service schedules.
+
+`scripts/refresh-data.mjs` downloads exactly three approved nflverse-data release
+CSVs, with no key or account. The roster normalizer excludes cut/retired records
+while retaining current reserve, inactive, practice-squad and exempt membership.
+Ambiguous identities fail instead of guessing teams. `gsis_id` is primary;
+`gsis_it_id` provides a namespaced fallback when necessary.
+
+The schedule normalizer uses documented Eastern local kickoff time with daylight
+saving. It derives Tuesday-to-Tuesday NFL week windows from dated games and
+extends them for delayed games; overlapping windows fail clearly. Byes require
+a complete regular-season schedule. Current observation contains the regular
+season; postseason phases are supported only when supplied by the source.
+Unknown kickoff remains unknown. Current opponent joins always use exact
+season/week/game/team, never a player-name match or a report from another week.
+
+Downloads use a 30-second deadline, a 20 MiB per-source bound, at most three
+HTTPS redirects on the release-host allowlist, and no automatic retry loop.
+HTTP 429 reports Retry-After when present and fails the run. One failed source,
+invalid payload or ambiguous join rejects the whole update. Unrecognized game
+or practice statuses remain unknown with their raw source value in a note.
+Only a validated feed is atomically written to ignored `web/current.json`.
+Provider CSVs are not saved to the repository.
+
+There is no persistent raw-source cache or database. The published Pages
+artifact is the shared cache: one hourly source collection serves every visitor.
+Browsers conditionally recheck that same-origin JSON at most once per five
+minutes while visible, and on return after that interval. Browser checks do
+not alter source vintage or provider retrieval timestamps. Provider requests
+do not increase with visitor count.
+
+## Feed contract
+
+`web/feed.mjs` owns the strict v2 contract; `web/example.json` is a wholly
+synthetic fixture. The format is for the collector, not manual user maintenance.
+It is separate from the historical Python snapshot schema.
+
+| Field | Meaning |
+| --- | --- |
+| `schema_version`, `mode`, `label`, `generated_at` | Version 2, `live` or `example`, label and assembly timestamp |
+| `sources` | Stable ID, publisher label, HTTPS asset/license URLs and reviewed permission note |
+| `roster`, `schedule` | Source ID, original vintage or null, optional source file update, retrieval and coverage |
+| `weeks` | Stable phase/season/week key, label, time window and explicitly confirmed bye teams |
+| `players` | Stable source ID, name, current team, position and roster status |
+| `games` | Stable game ID, week key, teams, kickoff or null, schedule/game status |
+| `reports` | Exact game/week/team, source metadata and all matching injury `entries` |
+| `entries` | Stable ID, name, position, injury, separate game/practice/roster statuses, status source and optional note |
+
+Only HTTPS links without embedded credentials are accepted. IDs and enums are
+validated; unknown fields, ambiguous duplicate joins, malformed timestamps,
+future live inputs and unbounded lists fail. Parsing is capped at 5 MB, 6,000
+players, 800 games, 1,600 reports and 250 entries per team report. Provider text
+is rendered as text, never HTML. No credentials are accepted by the schema.
+
+## Build, deploy and revive
+
+Use Node 24 and Python 3.12; see [README.md](../README.md) for setup.
 
 ```sh
 npm ci
 npm test
+node --check web/app.mjs
 npm run build
 npm run dev
 ```
 
-The preview runs at `http://127.0.0.1:8786/`. The builder copies an explicit
-allowlist from `web/`, plus LICENSE and NOTICE, into ignored `dist/`; it never
-packages credentials, Python inputs, league configuration or arbitrary files.
-Run the Python suite from the README as well when changing the research code.
+An offline build contains the labelled fictional fallback. To prepare the
+published current-data artifact:
 
-`.github/workflows/tests.yml` verifies both suites, builds the static artifact
-and deploys main to GitHub Pages. Repository Pages must use GitHub Actions.
-There is no server, database, scheduled data collection or paid API dependency.
-Hosting uses the existing GitHub Pages setup, with no added paid service.
-To revive elsewhere, run the build and serve `dist/`; update the canonical URL
-and project/source links for the new home. Standard Git commits and release
-tags preserve prior source versions.
+```sh
+npm run refresh
+npm run build:live
+```
 
-## Next iteration
+`build:live` requires validated live data whose source IDs, asset URLs and license
+URLs match the reviewed collector definitions. Both build paths copy a fixed
+allowlist from `web/`, LICENSE and NOTICE to ignored `dist/`. They never package
+private research inputs, league configuration or arbitrary local files.
 
-Verify a current injury source's coverage and permitted use; add dated current
-schedule/roster context and an exporter from verified Python snapshots; then
-try a real weekly shortlist. Automatic refresh, numerical injury adjustments
-and additional fantasy features are not part of this release.
+[The existing workflow](../.github/workflows/tests.yml) checks Node and Python
+on source changes, then collects/validates data and publishes main using GitHub
+Pages. Hourly scheduled runs at minute 23 skip historical Python tests but run
+the Node suite, collector and build. All deployments share one concurrency
+group and use standard public `ubuntu-latest` runners. Pages artifact retention
+is one day. There are no data commits or scheduled private-input uploads.
+
+Collection/build failure stops publication, leaving the previous deployed site
+unchanged. Its timestamps age naturally. GitHub schedules are best effort and
+can be disabled after 60 days of repository inactivity. To revive, enable the
+existing workflow in Actions if disabled, dispatch it manually and verify the
+successful deployment and its `current.json` timestamps. Investigate failed
+source formats/permissions before changing the adapter; do not retimestamp
+an old report or enable paid capacity to hide failure.
+
+The app's no-data state offers retry and a fictional example. Runtime refresh
+failure retains the last loaded data with a visible warning until success.
+To relocate, build and serve `dist/`, update canonical/source links and arrange
+one free shared collection with the same guards. Git history preserves the
+previous manual prototype at `ba7bdc8`; Python research and frozen artifacts
+remain in their canonical locations.
+
+## Verification
+
+Offline Node tests cover source-shaped CSV parsing, injured/current identity
+membership, transfers, exact-game joins, all-position report coverage, explicit
+byes, schedule changes and timezone transitions, stale/unknown vintage,
+publication provenance, bounded downloads and failure behavior. The 44-test
+Python research suite remains credential-free.
+
+Before claiming delivery, also check desktop, narrow mobile and keyboard
+search/add/remove flows; persistent selections; missing reports; labelled
+fictional fallback after a failed return; source links; live workflow completion;
+and the deployed version/data counts. Do not equate a local build with a live
+deployment.

@@ -1,0 +1,6 @@
+season,season_type,game_type,team,week,gsis_id,position,full_name,report_primary_injury,report_status,practice_primary_injury,practice_secondary_injury,practice_status
+2026,REG,REG,CAR,1,fiction-ir,WR,Blair Fixture,Ankle,Questionable,Ankle,,Limited Participation in Practice
+2026,REG,REG,CAR,1,fiction-defender,CB,"Jules Fiction, Jr.",Knee,Out,Knee,,Did Not Participate In Practice
+2026,REG,REG,CAR,1,fiction-guard,G,Kai Synthetic,,,,,Full Participation in Practice
+2026,REG,REG,CAR,1,fiction-punter,P,Lane Example,Hamstring,Doubtful,Hamstring,,Did Not Participate In Practice
+2026,REG,REG,CHI,1,fiction-lb,LB,Cameron Example,Shoulder,,Shoulder,Illness,Full Participation in Practice

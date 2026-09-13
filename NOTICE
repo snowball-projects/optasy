@@ -11,3 +11,19 @@ https://github.com/nflverse/nfldata
 
 The source data were filtered, normalized, joined, and statistically summarized.
 Raw source data are not redistributed in this repository.
+
+The dashboard additionally publishes filtered and normalized NFL roster,
+schedule, and injury records from nflverse-data release CSVs:
+https://github.com/nflverse/nflverse-data/releases
+https://github.com/nflverse/nflverse-data/blob/main/LICENSE.md
+
+These data are licensed by their publisher under Creative Commons Attribution
+4.0 International, not optasy's MIT software license:
+https://creativecommons.org/licenses/by/4.0/
+
+optasy filters roster membership, normalizes identity/team/status fields, joins
+weekly opponents and reports, and adds qualified positional context. Every
+available matching injury entry is retained. No endorsement by nflverse or the
+NFL is implied. Data are provided without warranties under the source license;
+underlying report timestamps and independent completeness are not established.
+See docs/DATA_SOURCES.md for the source review and provenance limits.

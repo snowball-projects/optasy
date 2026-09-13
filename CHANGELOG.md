@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.3.0 - 2026-09-13
+
+- Replace manual snapshots with NFL player search, six removable selections,
+  automatic weekly opponents and complete available team injury entries.
+- Keep injured/reserve roster members searchable and distinguish game/practice
+  status, missing coverage, unknown report vintage and plausible role relevance.
+- Add reviewed CC BY 4.0 nflverse-data integration with shared hourly collection,
+  bounded requests and retained previous deployment on failure. Upstream injuries
+  update daily; no live or fantasy-effect claim is made.
+- Preserve historical Python code/research; remove league and broader fantasy
+  features from current product direction. Add offline parser/join/failure tests.
+
 ## 0.2.0 - 2026-09-10
 
 - Transfer the canonical public repository to `snowball-projects/optasy` and

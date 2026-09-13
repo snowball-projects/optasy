@@ -12,6 +12,8 @@ config/league.yaml
 data/
 dist/
 node_modules/
+web/current.json
+web/current.json.pending
 *.sqlite
 *.sqlite-shm
 *.sqlite-wal

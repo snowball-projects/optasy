@@ -1,29 +1,71 @@
 import { cp, mkdir, rm, readFile, writeFile } from "node:fs/promises";
-import { validateSnapshot } from "../web/model.mjs";
+import { parseFeed } from "../web/feed.mjs";
+import { sourceDefinitions, PUBLICATION_POLICY } from "./refresh-data.mjs";
 
 const root = new URL("../", import.meta.url);
-validateSnapshot(
-  JSON.parse(await readFile(new URL("web/sample.json", root), "utf8")),
+const requireLive = process.argv.includes("--require-live");
+if (process.argv.slice(2).some((arg) => arg !== "--require-live"))
+  throw new Error("Unknown build option.");
+const example = parseFeed(
+  await readFile(new URL("web/example.json", root), "utf8"),
 );
+if (example.mode !== "example")
+  throw new Error("Example asset must be fictional.");
 const files = [
   "index.html",
   "styles.css",
   "app.mjs",
   "model.mjs",
-  "sample.json",
+  "feed.mjs",
+  "example.json",
   "icon.svg",
 ];
+let current;
+try {
+  current = await readFile(new URL("web/current.json", root), "utf8");
+} catch (error) {
+  if (error.code !== "ENOENT" || requireLive) throw error;
+}
+if (current) {
+  const data = parseFeed(current);
+  if (!PUBLICATION_POLICY.verified || data.mode !== "live")
+    throw new Error("Current data must pass the reviewed public-data policy.");
+  const season = data.weeks[0]?.season;
+  const approved = sourceDefinitions(season);
+  if (
+    data.sources.length !== approved.length ||
+    data.sources.some(
+      (source) =>
+        !approved.some(
+          (entry) =>
+            entry.id === source.id &&
+            entry.url === source.url &&
+            entry.terms_url === source.terms_url,
+        ),
+    )
+  ) {
+    throw new Error(
+      "Current data sources are outside the reviewed release allowlist.",
+    );
+  }
+  files.push("current.json");
+}
 const html = await readFile(new URL("web/index.html", root), "utf8");
 for (const name of ["styles.css", "app.mjs", "icon.svg"]) {
-  if (!html.includes(name)) throw new Error(`Missing asset reference: ${name}`);
+  if (!html.includes(name)) throw new Error("Missing asset reference: " + name);
 }
 await rm(new URL("dist/", root), { recursive: true, force: true });
 await mkdir(new URL("dist/", root));
 for (const file of files)
-  await cp(new URL(`web/${file}`, root), new URL(`dist/${file}`, root));
+  await cp(new URL("web/" + file, root), new URL("dist/" + file, root));
 for (const file of ["LICENSE", "NOTICE"])
-  await cp(new URL(file, root), new URL(`dist/${file}`, root));
+  await cp(new URL(file, root), new URL("dist/" + file, root));
 await writeFile(new URL("dist/.nojekyll", root), "");
 console.log(
-  `Built ${files.length} static files. No private inputs or network access required.`,
+  "Built " +
+    files.length +
+    " public static files; " +
+    (current
+      ? "validated current feed included."
+      : "current feed unavailable, fictional fallback only."),
 );

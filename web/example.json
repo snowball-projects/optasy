@@ -1,0 +1,481 @@
+{
+  "schema_version": 2,
+  "mode": "example",
+  "label": "Fictional demonstration",
+  "generated_at": "2026-09-13T12:00:00Z",
+  "sources": [
+    {
+      "id": "fictional",
+      "label": "Fictional demonstration created by snowball",
+      "url": "https://github.com/snowball-projects/optasy/blob/main/web/example.json",
+      "terms_url": "https://github.com/snowball-projects/optasy/blob/main/LICENSE",
+      "permission": "example",
+      "permission_note": "Created for optasy under MIT. All players, matchups and injury reports in this example are fictional."
+    }
+  ],
+  "roster": {
+    "source_id": "fictional",
+    "reported_at": null,
+    "source_updated_at": "2026-09-13T12:00:00Z",
+    "retrieved_at": "2026-09-13T12:00:00Z",
+    "coverage": "partial"
+  },
+  "schedule": {
+    "source_id": "fictional",
+    "reported_at": null,
+    "source_updated_at": "2026-09-13T12:00:00Z",
+    "retrieved_at": "2026-09-13T12:00:00Z",
+    "coverage": "partial"
+  },
+  "weeks": [
+    {
+      "key": "example-2026-1",
+      "label": "Example week 1",
+      "season": 2026,
+      "week": 1,
+      "starts_at": "2026-09-01T06:00:00Z",
+      "ends_at": "2026-09-08T06:00:00Z",
+      "byes": []
+    },
+    {
+      "key": "example-2026-2",
+      "label": "Example week 2",
+      "season": 2026,
+      "week": 2,
+      "starts_at": "2026-09-08T06:00:00Z",
+      "ends_at": "2026-09-15T06:00:00Z",
+      "byes": ["MIN"]
+    }
+  ],
+  "players": [
+    {
+      "id": "demo-kai",
+      "name": "Kai Mercer",
+      "team": "BUF",
+      "position": "WR",
+      "roster_status": "active"
+    },
+    {
+      "id": "demo-eli",
+      "name": "Eli Vale",
+      "team": "BUF",
+      "position": "QB",
+      "roster_status": "injured-reserve"
+    },
+    {
+      "id": "demo-theo",
+      "name": "Theo Rowan",
+      "team": "KC",
+      "position": "RB",
+      "roster_status": "active"
+    },
+    {
+      "id": "demo-sam",
+      "name": "Sam Wren",
+      "team": "PHI",
+      "position": "TE",
+      "roster_status": "pup"
+    },
+    {
+      "id": "demo-jo",
+      "name": "Jo Wilder",
+      "team": "CHI",
+      "position": "QB",
+      "roster_status": "active"
+    },
+    {
+      "id": "demo-casey",
+      "name": "Casey Finch",
+      "team": "SF",
+      "position": "K",
+      "roster_status": "active"
+    },
+    {
+      "id": "demo-remy",
+      "name": "Remy Hart",
+      "team": "SEA",
+      "position": "DB",
+      "roster_status": "active"
+    },
+    {
+      "id": "demo-alex",
+      "name": "Alex Lane",
+      "team": "NYJ",
+      "position": "WR",
+      "roster_status": "reserve"
+    },
+    {
+      "id": "demo-drew",
+      "name": "Drew Meadow",
+      "team": "ATL",
+      "position": "P",
+      "roster_status": "practice-squad"
+    },
+    {
+      "id": "demo-ash",
+      "name": "Ash Reed",
+      "team": "MIN",
+      "position": "RB",
+      "roster_status": "nfi"
+    },
+    {
+      "id": "demo-river",
+      "name": "River North",
+      "team": "WAS",
+      "position": "C",
+      "roster_status": "exempt"
+    },
+    {
+      "id": "demo-quinn",
+      "name": "Quinn Alder",
+      "team": "JAX",
+      "position": "LB",
+      "roster_status": "suspended"
+    },
+    {
+      "id": "demo-renee",
+      "name": "Renée Marlow",
+      "team": "BUF",
+      "position": "TE",
+      "roster_status": "active"
+    },
+    {
+      "id": "demo-same-name",
+      "name": "Kai Mercer",
+      "team": "KC",
+      "position": "WR",
+      "roster_status": "active"
+    }
+  ],
+  "games": [
+    {
+      "id": "demo-BAL-BUF",
+      "week_key": "example-2026-2",
+      "home": "BAL",
+      "away": "BUF",
+      "kickoff": "2026-09-13T17:00:00Z",
+      "status": "scheduled"
+    },
+    {
+      "id": "demo-KC-DET",
+      "week_key": "example-2026-2",
+      "home": "KC",
+      "away": "DET",
+      "kickoff": "2026-09-13T20:25:00Z",
+      "status": "scheduled"
+    },
+    {
+      "id": "demo-PHI-NYG",
+      "week_key": "example-2026-2",
+      "home": "PHI",
+      "away": "NYG",
+      "kickoff": "2026-09-14T00:20:00Z",
+      "status": "scheduled"
+    },
+    {
+      "id": "demo-CHI-GB",
+      "week_key": "example-2026-2",
+      "home": "CHI",
+      "away": "GB",
+      "kickoff": "2026-09-14T23:15:00Z",
+      "status": "scheduled"
+    },
+    {
+      "id": "demo-SF-LAR",
+      "week_key": "example-2026-2",
+      "home": "SF",
+      "away": "LAR",
+      "kickoff": "2026-09-13T20:05:00Z",
+      "status": "scheduled"
+    },
+    {
+      "id": "demo-SEA-LAC",
+      "week_key": "example-2026-2",
+      "home": "SEA",
+      "away": "LAC",
+      "kickoff": null,
+      "status": "tbd"
+    },
+    {
+      "id": "demo-NYJ-MIA",
+      "week_key": "example-2026-2",
+      "home": "NYJ",
+      "away": "MIA",
+      "kickoff": "2026-09-12T17:00:00Z",
+      "status": "postponed"
+    },
+    {
+      "id": "demo-ATL-NO",
+      "week_key": "example-2026-2",
+      "home": "ATL",
+      "away": "NO",
+      "kickoff": null,
+      "status": "canceled"
+    },
+    {
+      "id": "demo-JAX-CIN",
+      "week_key": "example-2026-2",
+      "home": "JAX",
+      "away": "CIN",
+      "kickoff": "2026-09-11T00:20:00Z",
+      "status": "final"
+    },
+    {
+      "id": "demo-prior-BAL-BUF",
+      "week_key": "example-2026-1",
+      "home": "BAL",
+      "away": "BUF",
+      "kickoff": "2026-09-06T17:00:00Z",
+      "status": "final"
+    }
+  ],
+  "reports": [
+    {
+      "source_id": "fictional",
+      "reported_at": "2026-09-12T21:00:00Z",
+      "source_updated_at": "2026-09-13T12:00:00Z",
+      "retrieved_at": "2026-09-13T12:00:00Z",
+      "coverage": "complete",
+      "game_id": "demo-BAL-BUF",
+      "week_key": "example-2026-2",
+      "team": "BAL",
+      "entries": [
+        {
+          "id": "injury-milo",
+          "name": "Milo Cedar",
+          "position": "CB",
+          "injury": "Hamstring",
+          "game_status": "Out",
+          "practice_status": "Did not practice",
+          "roster_status": "active",
+          "status_source": "official"
+        },
+        {
+          "id": "injury-noel",
+          "name": "Noel Birch",
+          "position": "S",
+          "injury": "Ankle",
+          "game_status": "Questionable",
+          "practice_status": "Limited",
+          "roster_status": "active",
+          "status_source": "official"
+        },
+        {
+          "id": "injury-sage",
+          "name": "Sage Brook",
+          "position": "EDGE",
+          "injury": "Shoulder",
+          "game_status": "Doubtful",
+          "practice_status": "Did not practice",
+          "roster_status": "active",
+          "status_source": "official"
+        },
+        {
+          "id": "injury-lane",
+          "name": "Lane Fox",
+          "position": "LB",
+          "injury": "Knee",
+          "game_status": "Not listed",
+          "practice_status": "Full",
+          "roster_status": "active",
+          "status_source": "official"
+        },
+        {
+          "id": "injury-finn",
+          "name": "Finn Grove",
+          "position": "WR",
+          "injury": "Wrist",
+          "game_status": "Questionable",
+          "practice_status": "Limited",
+          "roster_status": "active",
+          "status_source": "official"
+        },
+        {
+          "id": "injury-otto",
+          "name": "Otto Moss",
+          "position": "T",
+          "injury": "Back",
+          "game_status": "Out",
+          "practice_status": "Did not practice",
+          "roster_status": "active",
+          "status_source": "official"
+        },
+        {
+          "id": "injury-ari",
+          "name": "Ari Pine",
+          "position": "K",
+          "injury": "Groin",
+          "game_status": "Questionable",
+          "practice_status": "Limited",
+          "roster_status": "active",
+          "status_source": "official"
+        },
+        {
+          "id": "injury-lee",
+          "name": "Lee Bay",
+          "position": "LS",
+          "injury": "Knee",
+          "game_status": "Unknown",
+          "practice_status": "Unknown",
+          "roster_status": "active",
+          "status_source": "news",
+          "note": "Fictional news note: evaluation is ongoing. No official game designation is supplied."
+        }
+      ]
+    },
+    {
+      "source_id": "fictional",
+      "reported_at": "2026-09-12T19:00:00Z",
+      "source_updated_at": "2026-09-13T12:00:00Z",
+      "retrieved_at": "2026-09-13T12:00:00Z",
+      "coverage": "partial",
+      "game_id": "demo-KC-DET",
+      "week_key": "example-2026-2",
+      "team": "DET",
+      "entries": [
+        {
+          "id": "injury-jae",
+          "name": "Jae Forest",
+          "position": "DT",
+          "injury": "Ankle",
+          "game_status": "Questionable",
+          "practice_status": "Limited",
+          "roster_status": "active",
+          "status_source": "official"
+        },
+        {
+          "id": "injury-ellis",
+          "name": "Ellis Rain",
+          "position": "QB",
+          "injury": "Hand",
+          "game_status": "Not listed",
+          "practice_status": "Full",
+          "roster_status": "active",
+          "status_source": "official"
+        }
+      ]
+    },
+    {
+      "source_id": "fictional",
+      "reported_at": null,
+      "source_updated_at": "2026-09-13T12:00:00Z",
+      "retrieved_at": "2026-09-13T12:00:00Z",
+      "coverage": "partial",
+      "game_id": "demo-PHI-NYG",
+      "week_key": "example-2026-2",
+      "team": "NYG",
+      "entries": [
+        {
+          "id": "injury-nico",
+          "name": "Nico Snow",
+          "position": "LB",
+          "injury": "Calf",
+          "game_status": "Questionable",
+          "practice_status": "Limited",
+          "roster_status": "active",
+          "status_source": "official"
+        }
+      ],
+      "reported_date": "2026-09-12"
+    },
+    {
+      "source_id": "fictional",
+      "reported_at": null,
+      "source_updated_at": "2026-09-13T12:00:00Z",
+      "retrieved_at": "2026-09-13T12:00:00Z",
+      "coverage": "unknown",
+      "game_id": "demo-CHI-GB",
+      "week_key": "example-2026-2",
+      "team": "GB",
+      "entries": []
+    },
+    {
+      "source_id": "fictional",
+      "reported_at": "2026-09-09T12:00:00Z",
+      "source_updated_at": "2026-09-13T12:00:00Z",
+      "retrieved_at": "2026-09-13T12:00:00Z",
+      "coverage": "partial",
+      "game_id": "demo-SF-LAR",
+      "week_key": "example-2026-2",
+      "team": "LAR",
+      "entries": [
+        {
+          "id": "injury-arlen",
+          "name": "Arlen Stone",
+          "position": "CB",
+          "injury": "Foot",
+          "game_status": "Out",
+          "practice_status": "Did not practice",
+          "roster_status": "active",
+          "status_source": "official"
+        }
+      ]
+    },
+    {
+      "source_id": "fictional",
+      "reported_at": null,
+      "source_updated_at": "2026-09-13T12:00:00Z",
+      "retrieved_at": "2026-09-13T12:00:00Z",
+      "coverage": "partial",
+      "game_id": "demo-SEA-LAC",
+      "week_key": "example-2026-2",
+      "team": "LAC",
+      "entries": [
+        {
+          "id": "injury-emery",
+          "name": "Emery Lake",
+          "position": "WR",
+          "injury": "Shoulder",
+          "game_status": "Unknown",
+          "practice_status": "Unknown",
+          "roster_status": "active",
+          "status_source": "unknown"
+        }
+      ]
+    },
+    {
+      "source_id": "fictional",
+      "reported_at": null,
+      "source_updated_at": "2026-09-13T12:00:00Z",
+      "retrieved_at": "2026-09-13T12:00:00Z",
+      "coverage": "partial",
+      "game_id": "demo-NYJ-MIA",
+      "week_key": "example-2026-2",
+      "team": "MIA",
+      "entries": [
+        {
+          "id": "injury-lake",
+          "name": "Lake West",
+          "position": "S",
+          "injury": "Knee",
+          "game_status": "Unknown",
+          "practice_status": "Unknown",
+          "roster_status": "active",
+          "status_source": "unknown"
+        }
+      ]
+    },
+    {
+      "source_id": "fictional",
+      "reported_at": "2026-09-05T12:00:00Z",
+      "source_updated_at": "2026-09-13T12:00:00Z",
+      "retrieved_at": "2026-09-13T12:00:00Z",
+      "coverage": "partial",
+      "game_id": "demo-prior-BAL-BUF",
+      "week_key": "example-2026-1",
+      "team": "BAL",
+      "entries": [
+        {
+          "id": "injury-prior",
+          "name": "Prior Example",
+          "position": "CB",
+          "injury": "Knee",
+          "game_status": "Out",
+          "practice_status": "Unknown",
+          "roster_status": "active",
+          "status_source": "official"
+        }
+      ]
+    }
+  ]
+}

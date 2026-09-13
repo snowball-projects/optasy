@@ -1,0 +1,11 @@
+season,week,team,full_name,gsis_id,gsis_it_id,espn_id,position,status,status_description_abbr
+2026,1,CHI,Arden Sample,fiction-qb,,,QB,ACT,A01
+2026,1,CAR,Blair Fixture,fiction-ir,,,WR,RES,R01
+2026,1,CHI,Cameron Example,fiction-lb,,,LB,INA,A01
+2026,1,CAR,Devon Synthetic,fiction-ps,,,TE,DEV,P01
+2026,1,CAR,Ellis Mock,,,,CB,CUT,W03
+2026,1,CHI,Finley Demo,fiction-retired,,,P,RET,R02
+2026,1,CAR,Gray Fixture,,fiction-it,,RB,DEV,P01
+2026,1,CHI,Hayden Example,fiction-transfer,,,WR,ACT,A01
+2026,2,CAR,Hayden Example,fiction-transfer,,,WR,ACT,A01
+2025,18,CAR,Indigo Historical,fiction-historical,,,DT,ACT,A01
