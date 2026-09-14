@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.8.0 - prepared locally, unpublished
+
+- Add separately labelled 2025 defensive-event history, historical teams,
+  specific production leaders, role relevance and conditional absence context.
+  Keep missing coverage, participation and quality/benefit limits explicit.
+- Show injury-file age separately from unknown report time. Add manual shared
+  data refresh, visible outcomes, failure backoff and deferred updates that
+  preserve active interactions, selections and scroll.
+- Label elapsed kickoff as status unconfirmed; never infer live/final from
+  scores or a clock. Refresh stale depth context safely as retained data ages.
+- Keep historical collection optional, resolve coarse linebacker event context
+  conservatively, and clear deferred clock state on Escape or week changes.
+
 ## 0.7.0 - 2026-09-14
 
 - Keep defender position beside the name as permanent identity text.

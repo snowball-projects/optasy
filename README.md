@@ -6,6 +6,10 @@ A snowball project. Find an NFL player and see their opponent's injury report.
 [Product scope](docs/PRODUCT.md) · [Dashboard guide](docs/DASHBOARD.md) ·
 [Data sources](docs/DATA_SOURCES.md) · [Image credits](docs/MEDIA.md)
 
+Version 0.8.0 is prepared locally for review and has not been published. The live
+site remains on 0.7.0; historical production and shared-data refresh below describe
+the prepared version.
+
 Search the current roster source by name, team or position and select up to six
 players. A compact toolbar holds search, the week selector and an information
 button. Below it, one board starts with two equal vertical spaces and divides
@@ -20,6 +24,20 @@ of health. Click or tap a player, or press Enter or Space, for full details.
 Remove a player with its × button.
 Injured and reserve roster members remain searchable. Selections stay in the
 browser; there are no accounts or league connections.
+
+Rows also show historical defensive production where a stable 2025 record
+exists: sacks/QB hits, passes defended/interceptions, or mixed sacks/passes
+defended for coarse linebacker roles, with the period and
+historical teams visible. Bold counts highlight specific recorded-event leaders
+among the listed defenders, not current defensive quality. Click for role
+relevance, source coverage and conditional absence context. Missing history is
+unknown; no validated injury benefit or replacement-quality estimate is supplied.
+See [Contribution evidence](docs/CONTRIBUTION_REVIEW.md).
+
+Refresh checks the latest shared files without forcing an upstream update.
+Visible tabs check every five minutes, with failure backoff. File age remains
+separate from unknown report time. Elapsed kickoff is labelled status
+unconfirmed because the source supplies no live/final field; no scores are shown.
 
 The dashboard defaults to the current regular-season NFL week when the schedule
 covers it. Explicit byes, missing schedules/reports, changed kickoffs, started
@@ -40,10 +58,13 @@ original team reports is not established. Source report dates are currently
 absent. Information popups distinguish that unknown vintage from file
 modification and optasy collection times.
 
-A shared GitHub Actions run checks the four sources hourly at minute 23.
+The prepared collector checks four required sources plus one optional historical
+source in the existing hourly GitHub Actions run at minute 23.
 Upstream injury and roster files normally update daily, not live. Schedules
 update more often. Runs can be delayed, fail or become dormant; a failed
-collection leaves the previous site visible with ageing timestamps. Data gaps
+core collection leaves the previous site visible with ageing timestamps. Failed
+history collection retains a validated local copy if available, or omits history,
+without preventing fresh injury publication. Data gaps
 never imply a healthy opponent.
 
 See [the source review](docs/DATA_SOURCES.md) for the September 13 evidence,

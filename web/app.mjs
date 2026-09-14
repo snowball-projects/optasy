@@ -1,22 +1,38 @@
-import { parseFeed } from "./feed.mjs?v=0.7.0";
+import {
+  validateContributions,
+  defenderContribution,
+  MAX_CONTRIBUTION_BYTES,
+  productionLeaders,
+} from "./contribution.mjs?v=0.8.0";
+import {
+  createRefreshController,
+  canApplyRefresh,
+} from "./refresh.mjs?v=0.8.0";
+import { parseFeed } from "./feed.mjs?v=0.8.0";
 import {
   searchPlayers,
   opponentRoster,
+  resolveDefender,
   groupDefenders,
   memberPills,
   STATUS_LEGEND,
   DEFENSIVE_POSITIONS,
   currentWeek,
   comparePlayer,
+  gameStateLabel,
+  reportFreshnessLabel,
+  defenderRole,
+  metricPerspective,
+  clockFingerprint,
   MAX_SELECTIONS,
   safeUrl,
-} from "./model.mjs?v=0.7.0";
+} from "./model.mjs?v=0.8.0";
 import {
   attachPopover,
   dismissPopover,
   isPopoverOpen,
   refreshPopover,
-} from "./popover.mjs?v=0.7.0";
+} from "./popover.mjs?v=0.8.0";
 
 const $ = (id) => document.getElementById(id);
 const STORAGE_KEY = "optasy.selected.v2";
@@ -25,6 +41,12 @@ let feed = null,
   weekKey = "",
   activeMode = "live",
   loading = false;
+let contributions = null,
+  contributionError = "",
+  pendingClock = false,
+  renderedClockKey = "";
+let pendingFeed = null,
+  refreshPhase = "loading";
 let lastCheck = 0,
   autoWeek = true,
   lastError = "",
@@ -255,6 +277,13 @@ function renderWeeks() {
 }
 function renderStatus() {
   const status = $("data-status");
+  const stateKey = JSON.stringify([
+    lastError,
+    activeMode,
+    Boolean(feed && Date.now() - Date.parse(feed.generated_at) > 86400000),
+  ]);
+  if (status.dataset.state === stateKey) return;
+  status.dataset.state = stateKey;
   status.replaceChildren();
   status.hidden =
     !lastError &&
@@ -303,6 +332,14 @@ function sourceDetails() {
         "Fictional example: every player, matchup and injury is invented.",
       ),
     );
+  panel.append(
+    node(
+      "p",
+      "Refresh checks the latest shared file on this site; it cannot force an upstream injury update. Visible tabs check every five minutes, backing off after failures. Browser last checked: " +
+        (lastCheck ? time(new Date(lastCheck).toISOString()) : "not yet") +
+        ".",
+    ),
+  );
   if (feed) {
     panel.append(
       node(
@@ -373,6 +410,28 @@ function sourceDetails() {
       "small",
     ),
   );
+  panel.append(
+    node(
+      "p",
+      "The 2025 line shows recorded regular-season defensive events for the displayed historical team(s), not current defensive quality or snap share. QB hits and sacks describe passing disruption; PD means passes defended and INT interceptions. Coverage events do not measure coverage efficiency. Bold event lines include a highest available total among the listed defenders for one displayed measure; ties are included and missing records excluded. This is not an overall ranking. Counts have no exposure denominator. Missing history stays unknown; there is no validated injury-advantage score.",
+      "small",
+    ),
+  );
+  if (contributionError)
+    panel.append(
+      node(
+        "p",
+        contributionError +
+          (contributions
+            ? " Previously loaded historical counts remain visible."
+            : ""),
+        "small",
+      ),
+    );
+  if (contributions)
+    panel.append(
+      link("Historical event data · CC BY 4.0", contributions.source.terms_url),
+    );
   const links = node("div", undefined, "info-links");
   for (const [label, url] of [
     ["snowball", "https://snowball-projects.github.io/"],
@@ -464,7 +523,11 @@ function reportDetails(result) {
     warnings.push("Source-file update time is unknown.");
   if (result.started)
     warnings.push(
-      "This game has started; this is not a preserved pre-game recommendation.",
+      "The source marks this game in progress or finished; this is not a preserved pre-game recommendation.",
+    );
+  if (!result.started && result.kickoffPassed)
+    warnings.push(
+      "Scheduled start has passed; the source does not confirm whether the game is in progress or finished.",
     );
   if (result.reportedAfterKickoff)
     warnings.push("Report issued at or after kickoff.");
@@ -526,12 +589,120 @@ function entryDetails(entry, result) {
   panel.append(block);
   return panel;
 }
-function memberDetails(member, result) {
+function memberDetails(member, result, leaders = {}) {
   const panel = member.injury
     ? entryDetails(member.injury, result)
     : node("div");
   if (!member.injury)
     panel.append(node("h2", member.name + " · " + member.position));
+  const role = defenderRole(result.player.position, member.position);
+  panel.append(
+    node(
+      "p",
+      role +
+        ": broad positional context for " +
+        result.player.name +
+        ", not a confirmed individual matchup.",
+      "small",
+    ),
+  );
+  const history = defenderContribution(
+    contributions,
+    member.id,
+    metricPerspective(result.player.position, member.position),
+  );
+  const historyBlock = node("div", undefined, "source-block");
+  historyBlock.append(node("h3", "Recorded defensive production"));
+  if (history) {
+    historyBlock.append(
+      facts([
+        ["Window", history.period],
+        [
+          "Historical teams",
+          history.record.teams.map((team) => team.team).join(", "),
+        ],
+        ...history.allMetrics.map((metric) => [
+          metric.label,
+          String(metric.value),
+        ]),
+        [
+          "Game records",
+          String(history.record.recorded_games) +
+            " source stat rows; not games played",
+        ],
+      ]),
+    );
+    for (const team of history.record.teams)
+      historyBlock.append(
+        node(
+          "p",
+          team.team +
+            ": " +
+            team.recorded_games +
+            " stat-game records; " +
+            team.sacks +
+            " sacks, " +
+            team.qb_hits +
+            " QB hits, " +
+            team.passes_defended +
+            " passes defended, " +
+            team.interceptions +
+            " interceptions.",
+          "small",
+        ),
+      );
+    const leading = history.metrics.filter((metric) =>
+      leaders[metric.key]?.includes(member.id),
+    );
+    if (leading.length)
+      historyBlock.append(
+        node(
+          "p",
+          "Highest available 2025 total among the listed defenders: " +
+            leading.map((metric) => metric.label.toLowerCase()).join(", ") +
+            ". Ties are included; defenders with missing history are not compared. This is not an overall quality rank.",
+        ),
+      );
+    historyBlock.append(
+      node("p", history.relevance),
+      node("p", history.limitation, "small"),
+    );
+    if (
+      member.injury ||
+      [
+        "reserve",
+        "injured-reserve",
+        "inactive",
+        "suspended",
+        "pup",
+        "nfi",
+      ].includes(member.roster_status)
+    )
+      historyBlock.append(
+        node(
+          "p",
+          "If absent or limited, this role's contribution needs replacing. A benefit to " +
+            result.player.name +
+            " is possible, but its direction and size cannot be established without replacement and matchup evidence. The listed designation does not confirm current participation.",
+        ),
+      );
+    historyBlock.append(
+      link("nflverse 2025 recorded plays", contributions.source.url),
+      facts([
+        ["File updated", time(contributions.source.source_updated_at)],
+        ["Collected", time(contributions.source.retrieved_at)],
+      ]),
+    );
+  } else
+    historyBlock.append(
+      node(
+        "p",
+        contributions
+          ? "No matching 2025 defensive stat record. This is missing history, not zero production or a current quality judgment."
+          : "Historical production data is unavailable.",
+      ),
+    );
+  panel.append(historyBlock);
   panel.append(facts([["Roster", member.roster_status.replaceAll("-", " ")]]));
   if (member.depth.length)
     panel.append(
@@ -584,7 +755,7 @@ function memberDetails(member, result) {
   panel.append(block);
   return panel;
 }
-function renderMember(member, result) {
+function renderMember(member, result, leaders) {
   const { injury, status, key } = memberPills(member);
   const item = node("li", undefined, "injury"),
     row = button("", null, "injury-row state-" + key);
@@ -617,9 +788,65 @@ function renderMember(member, result) {
     if (status) pills.append(node("span", status, "member-pill pill-status"));
     row.append(pills);
   }
-  attachPopover(row, () => memberDetails(member, result), {
-    label: member.name + " roster and injury details",
-  });
+  const history = defenderContribution(
+    contributions,
+    member.id,
+    metricPerspective(result.player.position, member.position),
+  );
+  const role = defenderRole(result.player.position, member.position);
+  const summary = history?.metrics.length
+    ? "2025 " +
+      history.record.teams.map((team) => team.team).join("/") +
+      " · " +
+      history.metrics
+        .map((metric) => metric.value + " " + metric.short)
+        .join(" · ")
+    : history
+      ? "2025 record · " + role
+      : contributions
+        ? "2025 · no record"
+        : "Historical data unavailable";
+  const production = node("span", summary, "member-production");
+  if (
+    history?.metrics.some((metric) => leaders[metric.key]?.includes(member.id))
+  )
+    production.classList.add("production-leader");
+  row.append(production);
+  row.setAttribute(
+    "aria-label",
+    row.getAttribute("aria-label") +
+      " " +
+      summary +
+      ". Role: " +
+      role +
+      ". Historical events, not current quality.",
+  );
+  attachPopover(
+    row,
+    () => {
+      // Resolve at activation, including reopening the same focused row after
+      // clock expiry; a deferred board render must not revive stale depth facts.
+      const current = resolveDefender(
+        feed,
+        result.player.id,
+        member.id,
+        weekKey,
+      );
+      return current
+        ? memberDetails(
+            current.member,
+            current.result,
+            productionLeaders(contributions, current.members),
+          )
+        : node(
+            "p",
+            "Defender details are no longer available for this opponent.",
+          );
+    },
+    {
+      label: member.name + " roster and injury details",
+    },
+  );
   item.append(row);
   return item;
 }
@@ -631,6 +858,8 @@ function emptySlot() {
   return slot;
 }
 function renderCards() {
+  if (feed) renderedClockKey = clockFingerprint(feed, weekKey);
+  pendingClock = false;
   const cards = $("cards"),
     focused = document.activeElement;
   const focusPlayer = focused.closest("article")?.dataset.playerId,
@@ -674,12 +903,15 @@ function renderCards() {
           let kickoff = result.game.kickoff
             ? kickoffTime.format(new Date(result.game.kickoff))
             : "Time TBD";
-          if (["postponed", "canceled"].includes(result.game.status))
-            kickoff = result.game.status;
-          else if (result.game.status === "final") kickoff = "Final";
-          else if (result.started) kickoff = "Started · " + kickoff;
+          kickoff =
+            gameStateLabel(result.game) +
+            (result.game.kickoff ? " · " + kickoff : "");
           opponent.append(node("p", kickoff, "kickoff"));
         }
+        if (result.report)
+          opponent.append(
+            node("p", reportFreshnessLabel(result.report), "report-freshness"),
+          );
         matchup.append(opponent);
       } else
         matchup.append(
@@ -721,6 +953,7 @@ function renderCards() {
           "aria-label",
           result.opponent + " defensive roster",
         );
+        const leaders = productionLeaders(contributions, members);
         for (const group of groupDefenders(members)) {
           const section = node(
             "section",
@@ -735,7 +968,7 @@ function renderCards() {
           );
           const list = node("ul", undefined, "roster-rows");
           for (const member of group.members)
-            list.append(renderMember(member, result));
+            list.append(renderMember(member, result, leaders));
           section.append(heading, list);
           entries.append(section);
         }
@@ -771,11 +1004,81 @@ function renderCards() {
     }
   }
   for (let i = selected.length; i < 2; i++) cards.append(emptySlot());
+  renderRefreshState();
 }
-async function loadFeed(mode, background = false) {
-  if (loading) return;
-  loading = true;
-  try {
+function interactionActive({ allowFocusedRow = false } = {}) {
+  return !canApplyRefresh({
+    popoverOpen: isPopoverOpen(),
+    searchOpen: !$("search-results").hidden,
+    focusedControl: Boolean(
+      document.activeElement.closest(
+        allowFocusedRow
+          ? "#week, .search-area"
+          : ".injury-row, #week, .search-area",
+      ),
+    ),
+  });
+}
+function applyFeed(bundle) {
+  const next = bundle.current;
+  const initial = !feed || next.mode !== activeMode;
+  if (!initial && interactionActive()) {
+    pendingFeed = bundle;
+    return;
+  }
+  pendingFeed = null;
+  if (initial) {
+    selected = next.mode === "live" ? readSelection() : [];
+    weekKey = "";
+    autoWeek = true;
+    $("search").value = "";
+    closeSearch();
+  }
+  activeMode = next.mode;
+  feed = next;
+  contributions = bundle.contributions;
+  contributionError = bundle.contributionError;
+  $("search").disabled = false;
+  $("search").placeholder =
+    activeMode === "example" ? "Search example players" : "Search players";
+  document.querySelector('label[for="search"]').textContent =
+    activeMode === "example" ? "Find a fictional player" : "Find an NFL player";
+  $("search-help").textContent =
+    activeMode === "example"
+      ? "Fictional players only. Choose up to six."
+      : "Choose up to six. Injured rostered players are included.";
+  renderWeeks();
+  renderCards();
+}
+function renderRefreshState() {
+  const label =
+    refreshPhase === "loading"
+      ? "Checking shared data…"
+      : refreshPhase === "error"
+        ? feed
+          ? "Check failed · previous data kept"
+          : "Check failed · data unavailable"
+        : pendingFeed || pendingClock
+          ? "Updates ready · finish interaction"
+          : contributionError
+            ? "Current data checked · history check failed"
+            : refreshPhase === "unchanged"
+              ? "Checked · no newer shared data"
+              : "Shared data updated";
+  $("refresh-state").textContent =
+    label +
+    (lastCheck && refreshPhase !== "loading"
+      ? " · " +
+        new Date(lastCheck).toLocaleTimeString(undefined, {
+          hour: "numeric",
+          minute: "2-digit",
+        })
+      : "");
+  $("refresh").setAttribute("aria-disabled", String(loading));
+  $("refresh").setAttribute("aria-busy", String(loading));
+}
+const refresher = createRefreshController({
+  async request(mode) {
     const response = await fetch(
       mode === "example" ? "./example.json" : "./current.json",
       { cache: "no-cache", signal: AbortSignal.timeout(15000) },
@@ -785,45 +1088,59 @@ async function loadFeed(mode, background = false) {
     const next = parseFeed(await response.text());
     if (next.mode !== mode)
       throw new Error("The data file has an unexpected mode.");
-    if (mode !== activeMode || !feed) {
-      selected = mode === "live" ? readSelection() : [];
-      weekKey = "";
-      autoWeek = true;
-    }
-    activeMode = mode;
-    feed = next;
-    lastError = "";
-    $("search").disabled = false;
-    $("search").placeholder =
-      mode === "example" ? "Search example players" : "Search players";
-    document.querySelector('label[for="search"]').textContent =
-      mode === "example" ? "Find a fictional player" : "Find an NFL player";
-    $("search-help").textContent =
-      mode === "example"
-        ? "Fictional players only. Choose up to six."
-        : "Choose up to six. Injured rostered players are included.";
+    let historical = contributions,
+      historicalError = "";
+    if (mode === "live") {
+      try {
+        const response = await fetch("./contributions.json", {
+          cache: "no-cache",
+          signal: AbortSignal.timeout(15000),
+        });
+        if (!response.ok) throw new Error("Historical production unavailable.");
+        const text = await response.text();
+        if (text.length > MAX_CONTRIBUTION_BYTES)
+          throw new Error("Historical production file is too large.");
+        historical = validateContributions(JSON.parse(text));
+      } catch {
+        historicalError = "Historical production could not be refreshed.";
+      }
+    } else historical = null;
+    return {
+      mode: next.mode,
+      generated_at: next.generated_at,
+      current: next,
+      contributions: historical,
+      contributionError: historicalError,
+    };
+  },
+  onData: applyFeed,
+  onState(state) {
+    refreshPhase = state.phase;
+    loading = state.phase === "loading";
+    lastCheck = state.lastCheck;
+    lastError = state.error || "";
     renderStatus();
-    if (!background || !isPopoverOpen()) {
-      renderWeeks();
-      renderCards();
-    }
-    if (background && !$("search-results").hidden) renderSearch();
-    if (!background) {
-      $("search").value = "";
-      closeSearch();
-      announce("");
-    }
-  } catch (error) {
-    lastError =
-      error.name === "TimeoutError" ? "The request timed out." : error.message;
-    renderStatus();
-    if (!feed) {
+    renderRefreshState();
+    if (!feed && state.phase === "error") {
       $("search").disabled = true;
       $("week").disabled = true;
     }
-  } finally {
-    loading = false;
-    lastCheck = Date.now();
+  },
+});
+function loadFeed(mode) {
+  return refresher.refresh(mode);
+}
+function flushPending({ allowFocusedRowClock = false } = {}) {
+  if (pendingFeed && !interactionActive()) {
+    applyFeed(pendingFeed);
+    renderRefreshState();
+  }
+  if (
+    pendingClock &&
+    !interactionActive({ allowFocusedRow: allowFocusedRowClock })
+  ) {
+    renderCards();
+    renderRefreshState();
   }
 }
 async function loadTeamAssets() {
@@ -886,32 +1203,67 @@ $("week").addEventListener("change", () => {
   announce("Opponent reports updated.");
 });
 document.addEventListener("pointerdown", (event) => {
-  if (!event.target.closest(".search-area")) closeSearch();
+  if (!event.target.closest(".search-area, .refresh-bar")) closeSearch();
 });
 document.addEventListener("focusin", (event) => {
-  if (!event.target.closest(".search-area")) closeSearch();
+  if (!event.target.closest(".search-area, .refresh-bar")) closeSearch();
 });
 function updateClock() {
   if (!feed) return;
   renderStatus();
   refreshPopover();
-  if (!isPopoverOpen()) {
+  if (!interactionActive()) {
+    flushPending();
+    const previousWeek = weekKey;
     renderWeeks();
-    renderCards();
+    if (
+      previousWeek !== weekKey ||
+      renderedClockKey !== clockFingerprint(feed, weekKey)
+    )
+      renderCards();
+  } else if (renderedClockKey !== clockFingerprint(feed, weekKey)) {
+    pendingClock = true;
+    renderRefreshState();
+  }
+  for (const card of document.querySelectorAll(".player-card")) {
+    const player = feed.players.find(
+      (player) => player.id === card.dataset.playerId,
+    );
+    if (!player) continue;
+    const result = comparePlayer(feed, player, weekKey);
+    const kickoff = card.querySelector(".kickoff");
+    if (kickoff && result.game)
+      kickoff.textContent =
+        gameStateLabel(result.game) +
+        (result.game.kickoff
+          ? " · " + kickoffTime.format(new Date(result.game.kickoff))
+          : "");
+    const freshness = card.querySelector(".report-freshness");
+    if (freshness) freshness.textContent = reportFreshnessLabel(result.report);
   }
 }
 document.addEventListener("visibilitychange", () => {
   if (!document.hidden && activeMode === "live") {
     updateClock();
-    if (Date.now() - lastCheck > 300000) loadFeed("live", true);
+    if (refresher.due(document.hidden)) loadFeed("live");
   }
 });
 setInterval(() => {
   if (document.hidden) return;
   updateClock();
-  if (activeMode === "live" && Date.now() - lastCheck > 300000)
-    loadFeed("live", true);
+  if (activeMode === "live" && refresher.due(document.hidden)) loadFeed("live");
 }, 60000);
+$("refresh").addEventListener("click", () => loadFeed(activeMode));
+for (const type of ["focusin", "click", "keydown"])
+  document.addEventListener(type, (event) =>
+    setTimeout(
+      () =>
+        flushPending({
+          allowFocusedRowClock: type === "keydown" && event.key === "Escape",
+        }),
+      0,
+    ),
+  );
 attachPopover($("info"), sourceDetails, {
   id: "source-popover",
   label: "Sources and information",

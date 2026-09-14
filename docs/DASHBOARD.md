@@ -1,6 +1,6 @@
 # Dashboard
 
-Version 0.7.0 · [Open optasy](https://snowball-projects.github.io/optasy/)
+Prepared local version 0.8.0, unpublished · [Open live optasy (0.7.0)](https://snowball-projects.github.io/optasy/)
 
 ## Use
 
@@ -25,7 +25,7 @@ section when multiple assignments exist. First string is chart context, not a
 confirmed game starter. Reserve and unknown roster status take precedence over
 depth for grouping.
 
-Uniform 56px rows put position immediately to the right of the name, as plain
+Uniform 68px rows put position immediately to the right of the name, as plain
 identity text. Only reported body-part injuries and meaningful game/practice
 statuses get highlighted pills. No per-row depth, reserve, active or healthy
 badges appear. A row without pills does not establish health. Missing report
@@ -83,11 +83,42 @@ vintage is conservatively flagged after more than three UTC calendar days.
 Roster/schedule source vintages use a 24-hour policy when supplied. These are
 operating reminders, not calibrated confidence thresholds.
 
-Started games remain readable as context, not preserved pre-game advice. An
+Elapsed kickoff reads “Start passed · status unconfirmed”, not live or final.
+The current schedule has no status field; score presence cannot prove final.
+Explicit source states remain supported by the schema but cannot be inferred
+from this CSV. See [GAME_STATUS_REVIEW.md](GAME_STATUS_REVIEW.md). An
 explicit report timestamp at/after kickoff is labelled. A report with unknown
 vintage cannot establish when the underlying information became known. Local
 clock checks update kickoff, current-week and age labels every minute without
 calling a provider.
+
+## Historical defender signals
+
+The second row line is fixed **2025 regular-season recorded production** for
+its named historical team(s), including players now on different teams. For
+selected QB/WR/TE players, defensive-line passing disruption uses sacks and QB
+hits; defensive-back coverage uses passes defended and interceptions. Linebacker
+rows show sacks and passes defended together because the coarse roster position
+does not establish a current rush/coverage assignment. RB/other selections receive
+broad role context and full historical counts in details, without an invented
+rushing-efficiency/benefit metric. All units are credited events; no snap,
+pass-rush or target denominator is available. Half sacks are preserved.
+
+Bold event lines contain at least one highest available displayed-event total
+among the current opposing roster's historical records; positive ties count,
+missing records do not become zero, and there is no composite ranking. The
+popup names the leading measure, all four counts, historical team subtotals,
+stat-game record count (not games played), source/file/retrieval times, role
+relevance and conditional absence limits. Reported Out/Q does not by itself
+confirm current participation. [CONTRIBUTION_REVIEW.md](CONTRIBUTION_REVIEW.md)
+owns the source and metric decision.
+
+`web/contributions.json` is a separate optional browser artifact with strict
+schema/provenance/size validation in `web/contribution.mjs`. Its version 1 schema
+contains season 2025/REG, source metadata, partial-coverage team/game/stat-row/
+player counts and GSIS-keyed per-player records with historical-team subtotals.
+A missing record is unknown history. Optional history failure preserves the core
+injury view and any previously validated historical data, with a detail notice.
 
 ## Source collection
 
@@ -118,10 +149,27 @@ Provider CSVs are not saved to the repository. Depth history is gzip-decoded
 with a 160 MiB expansion cap and a two-million-row limit; only each team's
 latest snapshot is retained. See DATA_SOURCES.md for observation semantics.
 
+The same `npm run refresh` also runs `scripts/contribution-data.mjs --optional`, collecting
+one fixed 2025 `stats_player` gzip CSV under the separately reviewed CC BY 4.0
+basis. It caps compressed input at 4 MiB, expansion at 20 MiB, 40,000 source rows,
+and the browser artifact at 1.5 MB. Only REG defensive records and four event
+counts survive; duplicates/invalid identities fail. The validated artifact is
+atomically written to ignored `web/contributions.json`. Historical collection
+failure is nonfatal: a previously written local artifact is retained only after
+revalidation; otherwise it is removed. A fresh checkout may have no prior history.
+Live builds omit missing or invalid historical data while still requiring the
+validated core feed. Core collection/validation failure retains the prior Pages
+deployment. No upstream request is delegated to visitors.
+
 There is no persistent raw-source cache or database. The published Pages
 artifact is the shared cache: one hourly source collection serves every visitor.
-Browsers conditionally recheck that same-origin JSON at most once per five
-minutes while visible, and on return after that interval. Browser checks do
+Browsers recheck the two same-origin JSON artifacts every five minutes while
+visible, and on return after that interval. Failures back off to 10/20/40/60
+minutes; manual Refresh bypasses the cadence, never an active request. It shows
+loading, changed, unchanged or error status with browser check time. Data waits
+while details/search/week/row interaction is active, then updates with selections
+and scroll preserved. Clock-derived depth/freshness expiration also waits safely
+while showing an updates-ready notice. Unchanged status controls retain focus. Browser checks do
 not alter source vintage or provider retrieval timestamps. Provider requests
 do not increase with visitor count.
 
@@ -184,7 +232,7 @@ the Node suite, collector and build. All deployments share one concurrency
 group and use standard public `ubuntu-latest` runners. Pages artifact retention
 is one day. There are no data commits or scheduled private-input uploads.
 
-Collection/build failure stops publication, leaving the previous deployed site
+Core collection or required build validation failure stops publication, leaving the previous deployed site
 unchanged. Its timestamps age naturally. GitHub schedules are best effort and
 can be disabled after 60 days of repository inactivity. To revive, enable the
 existing workflow in Actions if disabled, dispatch it manually and verify the

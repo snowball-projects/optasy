@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import {
   opponentRoster,
+  resolveDefender,
   groupDefenders,
   memberPills,
   comparePlayer,
@@ -44,6 +45,26 @@ function setup() {
   };
   return { feed, week, selected, comparison, member };
 }
+test("reopening a retained defender identity resolves expired depth instead of captured first-string facts", () => {
+  const { feed, selected, member, week } = setup();
+  const expires = now + 1000;
+  feed.depth.entries[0].observed_at = new Date(
+    expires - 86400000,
+  ).toISOString();
+  const opened = resolveDefender(feed, selected.id, member.id, week, now);
+  assert.equal(opened.member.starter, true);
+  const reopened = resolveDefender(
+    feed,
+    selected.id,
+    member.id,
+    week,
+    expires + 1,
+  );
+  assert.equal(reopened.member.starter, false);
+  assert.deepEqual(reopened.member.depth, []);
+  assert.equal(opened.member.starter, true); // Previously captured objects stay untouched.
+  assert.equal(resolveDefender(feed, selected.id, "missing", week, now), null);
+});
 test("defensive roster includes unlisted members, reserves and unmatched defensive injuries without name joins", () => {
   const { feed, week, comparison, member } = setup();
   const before = structuredClone(feed);

@@ -41,6 +41,21 @@ and defensive injuries. The founder's September 13, 2026 decision is canonical i
   show defensive positions only; exclude offense, special teams and unknown
   positions. This founder correction supersedes the earlier all-position display.
   Positional relevance may annotate defensive rows but must not filter them.
+- The September 14 contribution brief permits traceable defender participation/
+  production, role relevance and availability analysis. Preserve the compact
+  identity/section layout; the initial historical event line is explicitly
+  2025 regular season with historical teams, not current quality. Bold marks
+  specific event leaders among available histories, never an overall ranking.
+  Coarse linebacker roles show mixed sacks/passes-defended events for QB/WR/TE
+  selections; do not silently assign them to coverage-only metrics.
+  See docs/CONTRIBUTION_REVIEW.md; no PFR snaps/advanced stats or FTN participation
+  are approved. No inferred replacement quality, universal tackle/sack value,
+  unvalidated composite, probability or fantasy-point boost.
+- Refresh checks same-origin artifacts only, with visible check state, no
+  overlapping requests, visibility-aware cadence/backoff, and preserved active
+  interactions. Unknown report publication stays unknown. Clock-only kickoff
+  passage must read status unconfirmed; current schedule scores do not prove
+  live/final status. See docs/GAME_STATUS_REVIEW.md.
 - Preserve report vintage separately from source-file update and retrieval
   times. Unknown vintage stays unknown. Missing coverage is not a healthy team.
   Do not fabricate point boosts, individual coverage assignments or injury-count
@@ -49,7 +64,9 @@ and defensive injuries. The founder's September 13, 2026 decision is canonical i
   release CSVs under their explicit
   CC BY 4.0 data grant. The publisher-license basis and upstream provenance limit
   are documented. Recheck terms and coverage when expanding/replacing sources;
-  public access alone is insufficient.
+  public access alone is insufficient. The separately reviewed fifth input is
+  the fixed stats_player_week_2025.csv.gz historical defensive-event baseline,
+  collected by scripts/contribution-data.mjs into a separate validated artifact.
 - Media are a separate reviewed allowlist in `web/team-assets.json` and
   [docs/MEDIA.md](docs/MEDIA.md): twelve public-domain SVGs plus twenty small copyrighted PNG thumbnails
   used solely for editorial team identification. Keep their distinct use bases;
@@ -59,6 +76,8 @@ and defensive injuries. The founder's September 13, 2026 decision is canonical i
 - Collect centrally, at zero service cost. No provider calls from visitors,
   paid plans, billing changes, accounts or credentials in browser code.
   Retain the last deployed artifact after collection failure; fail clearly.
+  Historical production is optional: failure retains only revalidated local
+  history, or omits it, and must not block a valid core injury update.
 - Build copies only the explicit public allowlist. Never include historical
   private inputs, credentials or arbitrary local files in deployment.
 
@@ -92,7 +111,7 @@ repository visibility, paid capacity or history.
 - Keep the Python implementation and frozen historical evidence. Earlier draft
   protocols and broader injury proposals are historical, not product instructions.
 - Never commit `.env`, `config/league.yaml`, provider payloads, generated boards,
-  private league history, prospective decision records or `web/current.json`.
+  private league history, prospective decision records or generated `web/current.json` / `web/contributions.json` artifacts.
 - Research snapshots, frozen inputs and decisions are append-only. Do not
   overwrite/backfill them after outcomes are known. Preserve unrelated work.
 - The retained live-draft watcher is historical, experimental and read-only.

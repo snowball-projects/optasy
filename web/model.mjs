@@ -1,4 +1,4 @@
-import { TEAMS, POSITIONS, validateFeed, safeUrl } from "./feed.mjs?v=0.7.0";
+import { TEAMS, POSITIONS, validateFeed, safeUrl } from "./feed.mjs?v=0.8.0";
 
 export { TEAMS, POSITIONS, validateFeed, safeUrl };
 export const MAX_SELECTIONS = 6;
@@ -258,12 +258,17 @@ export function comparePlayer(feed, player, weekKey, now = Date.now()) {
     };
   }
   const opponent = game.home === currentPlayer.team ? game.away : game.home;
-  const started =
-    ["in-progress", "final"].includes(game.status) ||
-    (game.status === "scheduled" &&
-      game.kickoff !== null &&
-      Date.parse(game.kickoff) <= now);
-  const result = { ...base, player: currentPlayer, game, opponent, started };
+  const started = ["in-progress", "final"].includes(game.status);
+  const kickoffPassed =
+    game.kickoff !== null && Date.parse(game.kickoff) <= now;
+  const result = {
+    ...base,
+    player: currentPlayer,
+    game,
+    opponent,
+    started,
+    kickoffPassed,
+  };
   if (game.status === "canceled")
     return {
       ...result,
@@ -560,4 +565,87 @@ export function opponentRoster(feed, comparison, weekKey, now = Date.now()) {
         a.name.localeCompare(b.name) ||
         a.id.localeCompare(b.id),
     );
+}
+
+export function gameStateLabel(game, now = Date.now()) {
+  if (game.status === "final") return "Finished";
+  if (game.status === "in-progress") return "In progress";
+  if (game.status === "postponed") return "Postponed";
+  if (game.status === "canceled") return "Canceled";
+  if (!game.kickoff) return "Time TBD · status unconfirmed";
+  return Date.parse(game.kickoff) <= now
+    ? "Start passed · status unconfirmed"
+    : "Upcoming";
+}
+
+export function reportFreshnessLabel(report, now = Date.now()) {
+  if (!report) return "Injury report unavailable";
+  const age = report.source_updated_at
+    ? Math.max(
+        0,
+        Math.floor((now - Date.parse(report.source_updated_at)) / 3600000),
+      )
+    : null;
+  const file =
+    age === null
+      ? "File age unknown"
+      : "File " + (age < 1 ? "<1h" : age + "h") + " old";
+  return (
+    file +
+    " · " +
+    (report.reported_at
+      ? "report time supplied"
+      : report.reported_date
+        ? "report date only"
+        : "report time unknown")
+  );
+}
+
+export function defenderRole(selectedPosition, defenderPosition) {
+  return (
+    RELEVANCE[selectedPosition]?.[defenderPosition] || "Role effect unmeasured"
+  );
+}
+export function metricPerspective(selectedPosition, defenderPosition) {
+  if (!["QB", "WR", "TE"].includes(selectedPosition)) return selectedPosition;
+  if (["CB", "S", "FS", "SS", "DB"].includes(defenderPosition)) return "WR";
+  if (["DL", "DI", "DT", "NT", "DE", "EDGE"].includes(defenderPosition))
+    return "QB";
+  // Coarse linebacker positions do not establish a rush or coverage assignment.
+  return "MIXED";
+}
+
+export function resolveDefender(
+  feed,
+  playerId,
+  memberId,
+  weekKey,
+  now = Date.now(),
+) {
+  const player = feed.players.find((value) => value.id === playerId);
+  if (!player) return null;
+  const result = comparePlayer(feed, player, weekKey, now);
+  const members = opponentRoster(feed, result, weekKey, now);
+  const member = members.find((value) => value.id === memberId);
+  return member ? { result, member, members } : null;
+}
+export function clockFingerprint(feed, weekKey, now = Date.now()) {
+  const age = (item) => {
+    const v = vintage(item, now);
+    return [v.stale, v.retrievalStale, v.sourceFileStale, v.sourceFileUnknown];
+  };
+  return JSON.stringify([
+    currentWeek(feed, now)?.key,
+    weekKey,
+    age(feed.roster),
+    age(feed.schedule),
+    feed.reports.map(age),
+    feed.depth ? age(feed.depth) : null,
+    feed.depth?.entries.map(
+      (entry) =>
+        now >= Date.parse(entry.observed_at) &&
+        now - Date.parse(entry.observed_at) <= 86400000,
+    ),
+    feed.games.map((game) => gameStateLabel(game, now)),
+  ]);
 }

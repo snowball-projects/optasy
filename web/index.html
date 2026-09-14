@@ -15,7 +15,7 @@
     />
     <link rel="canonical" href="https://snowball-projects.github.io/optasy/" />
     <link rel="icon" type="image/svg+xml" href="icon.svg" />
-    <link rel="stylesheet" href="styles.css?v=0.7.0" />
+    <link rel="stylesheet" href="styles.css?v=0.8.0" />
     <title>optasy · snowball</title>
   </head>
   <body>
@@ -63,6 +63,18 @@
         </button>
       </div>
     </header>
+    <div class="refresh-bar">
+      <button
+        id="refresh"
+        data-preserve-popover
+        type="button"
+        aria-label="Refresh shared data"
+      >
+        ↻ Refresh</button
+      ><span id="refresh-state" role="status" aria-live="polite"
+        >Checking shared data…</span
+      >
+    </div>
     <main
       id="reports"
       class="board"
@@ -75,6 +87,6 @@
       <div id="cards" class="tiles"></div>
       <noscript><p>JavaScript is required to display the reports.</p></noscript>
     </main>
-    <script type="module" src="app.mjs?v=0.7.0"></script>
+    <script type="module" src="app.mjs?v=0.8.0"></script>
   </body>
 </html>

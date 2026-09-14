@@ -23,9 +23,40 @@ accounts, ESPN Fantasy connections or multi-league management. These were
 removed from the proposed direction, not deferred requirements. There is no
 draft, waiver, trade, general ranking or start/sit engine.
 
+## Contribution scope approved September 14, 2026
+
+The founder approved defender importance (participation/performance evidence),
+selected-player relevance and availability, for injured and uninjured defenders.
+This supersedes earlier exclusions against contribution analysis, without
+reopening leagues, roster imports, broad start/sit or fantasy-suite features.
+Use traceable, separately named signals. Workload is not quality; role relevance
+is not a causal benefit. No arbitrary composite, injury-count advantage,
+replacement-quality assumption or point/probability boost is approved without
+credible out-of-time validation and simple baselines.
+
+The initial implementation supplies current source-backed depth context and
+separate **2025 regular-season recorded events**, visibly naming historical
+teams. Passing disruption uses sacks/QB hits; coverage uses passes defended and
+interceptions. Bold event lines include a highest available displayed-measure
+total among that opposing roster, including ties and injured players. These
+are specific production comparisons, not an overall defender ranking. Missing
+history is not zero; previous teams/roles may differ. Details explain broad
+positional relevance and conditional absence effects. No favorable effect or
+confirmed absence is inferred from an undated Out/Q report.
+
+Current snap share was not approved because the obtainable PFR-derived family
+has unresolved upstream redistribution restrictions. Modern FTN participation
+is postseason-only. Recorded stat-game rows are not games played. No validated
+current defensive-quality or rushing-benefit metric is available in this
+release. The fixed historical baseline is deliberately not presented as current
+form; adding a separate current-season, pre-match window remains future work.
+See [CONTRIBUTION_REVIEW.md](CONTRIBUTION_REVIEW.md) for inputs, definitions,
+rights, sample, coverage, interpretations and limitations.
+
 ## Implemented behavior
 
-Version 0.7.0 is a static search-and-report dashboard using the approved
+Version 0.8.0 is prepared locally and unpublished; the live site remains on 0.7.0.
+The prepared version is a static search-and-report dashboard using the approved
 nflverse-data release files. It supports six selected players, automatic
 opponents, explicit byes, source-relative completeness, missing-report states,
 unknown kickoff, started games and source/collection age warnings. Selections
@@ -56,8 +87,9 @@ relevance where supported. Details do not expand the page. No direct individual
 coverage assignment, replacement quality, numerical boost or demonstrated
 fantasy effect is inferred.
 
-Source attribution, report/file/collection timestamps, refresh limits, privacy
-and licensing live behind information buttons. Missing data, byes, started
+Injury-file age and unknown report time are visible beside the matchup. Full
+source attribution, separate report/file/collection/browser-check timestamps,
+refresh limits, privacy and licensing live behind information buttons. Missing data, byes, started
 games, fictional mode and failures retain concise visible states. Reducing copy
 does not remove these distinctions or silently hide missing coverage.
 
@@ -77,7 +109,11 @@ never becomes an assertion that nobody is injured.
 ## Operating boundary
 
 Use the existing public GitHub Pages deployment and one shared hourly collection.
-Upstream injury and roster updates are normally daily. No per-visitor provider
+Upstream injury and roster updates are normally daily. The Refresh button checks
+the same-origin current and historical artifacts; it cannot force an upstream
+update. Visible tabs check every five minutes with failure backoff up to an hour.
+No overlapping requests; failed checks keep prior data. New data waits until
+open details, search or focused roster/week interactions finish. No per-visitor provider
 requests, account system, paid APIs, metered service or browser credentials.
 GitHub schedules can be delayed or dormant. Failure retains the previous
 published artifact; ageing and absent coverage remain visible.
@@ -86,6 +122,11 @@ The [source decision](DATA_SOURCES.md) records current coverage, explicit public
 data licensing, limits and provenance uncertainty. The [dashboard guide](DASHBOARD.md)
 owns the schema, commands, deployment and recovery. Do not require users to
 maintain reports or opponents manually.
+
+Elapsed kickoff is labelled “Start passed · status unconfirmed.” The source has
+no explicit live/final status; scores never manufacture it. Browser clocks
+update minute labels without downloading upstream archives. See
+[GAME_STATUS_REVIEW.md](GAME_STATUS_REVIEW.md).
 
 Outside the available schedule, the UI does not guess the NFL week or reuse an
 old opponent. The current source observation covers the regular season.

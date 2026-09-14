@@ -211,3 +211,19 @@ The selected integration supplies injury context, not evidence of fantasy-point
 effects. Positional relevance is a qualified football hypothesis. Counts,
 practice participation and game designations do not measure advantage, assign
 individual coverage or justify numerical player boosts.
+
+## September 14 contribution and game-state extension
+
+The approved fifth input is the fixed 2025 regular-season defensive `stats_player`
+release, collected and normalized separately under the reviewed publisher CC BY
+4.0 grant. [CONTRIBUTION_REVIEW.md](CONTRIBUTION_REVIEW.md) records exact source
+URLs, definitions, rights limits, observed coverage and excluded PFR/FTN families.
+Historical event totals are not current quality or participation. The initial
+223 KB derived artifact covers 1,034 defenders and 10,404 stat-game records across
+272 games/all 32 teams; independent completeness remains partial.
+
+[GAME_STATUS_REVIEW.md](GAME_STATUS_REVIEW.md) records the actual schedule schema:
+no live/final/cancelled/postponed state is provided. Scores and elapsed kickoff
+do not establish one. No new game-status source or faster upstream collection
+is introduced. The browser checks shared data and updates clock labels; it does
+not force injury-source updates.

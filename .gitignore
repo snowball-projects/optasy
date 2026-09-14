@@ -17,3 +17,6 @@ web/current.json.pending
 *.sqlite
 *.sqlite-shm
 *.sqlite-wal
+
+web/contributions.json
+web/contributions.json.pending

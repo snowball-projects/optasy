@@ -1,3 +1,4 @@
+import { validateContributions } from "../web/contribution.mjs";
 import { cp, mkdir, rm, readFile, writeFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import { parseFeed, TEAMS, safeUrl } from "../web/feed.mjs";
@@ -19,6 +20,8 @@ const files = [
   "model.mjs",
   "feed.mjs",
   "popover.mjs",
+  "refresh.mjs",
+  "contribution.mjs",
   "team-assets.json",
   "example.json",
   "icon.svg",
@@ -75,6 +78,15 @@ if (current) {
     );
   }
   files.push("current.json");
+}
+try {
+  const history = JSON.parse(
+    await readFile(new URL("web/contributions.json", root), "utf8"),
+  );
+  validateContributions(history);
+  files.push("contributions.json");
+} catch (error) {
+  console.warn(`Optional historical data omitted: ${error.message}`);
 }
 const html = await readFile(new URL("web/index.html", root), "utf8");
 for (const name of ["styles.css", "app.mjs", "icon.svg"]) {

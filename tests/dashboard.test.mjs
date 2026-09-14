@@ -257,7 +257,7 @@ test("postponed, canceled, TBD, rescheduled and started games preserve honest st
   assert.equal(result(data, "demo-drew").state, "canceled");
   assert.equal(result(data, "demo-quinn").started, true);
   assert.equal(
-    result(data, "demo-kai", Date.parse(data.games[0].kickoff)).started,
+    result(data, "demo-kai", Date.parse(data.games[0].kickoff)).kickoffPassed,
     true,
   );
   data.games[0].kickoff = "2026-09-16T17:00:00Z";
@@ -272,7 +272,8 @@ test("reports after kickoff stay visible but cannot silently serve as pregame ev
   data.games[0].kickoff = "2026-09-12T17:00:00Z";
   const comparison = result(validateFeed(data, now));
   assert.equal(comparison.reportedAfterKickoff, true);
-  assert.equal(comparison.started, true);
+  assert.equal(comparison.started, false);
+  assert.equal(comparison.kickoffPassed, true);
   assert.equal(comparison.entries.length, 8);
 });
 

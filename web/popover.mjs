@@ -125,6 +125,7 @@ function nextControl(trigger) {
 }
 
 function onOutsidePointer(event) {
+  if (event.target.closest?.("[data-preserve-popover]")) return;
   if (
     active &&
     !active.trigger.contains(event.target) &&
@@ -172,6 +173,7 @@ function onKeydown(event) {
 }
 
 function onFocusChange(event) {
+  if (event.target.closest?.("[data-preserve-popover]")) return;
   if (
     active &&
     !active.trigger.contains(event.target) &&

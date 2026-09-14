@@ -295,7 +295,7 @@ export function normalizeSchedule(rows, season) {
     const kickoff =
       dateKnown && time && time !== "NA" ? easternTimestamp(date, time) : null;
     // This CSV does not establish real-time game status. A past kickoff is
-    // handled as started by the UI; scores alone never manufacture a final.
+    // labelled as status unconfirmed by the UI; scores alone never manufacture a final.
     games.push({
       id,
       week_key: weekKey,
