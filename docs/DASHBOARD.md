@@ -1,6 +1,6 @@
 # Dashboard
 
-Version 0.6.0 · [Open optasy](https://snowball-projects.github.io/optasy/)
+Version 0.7.0 · [Open optasy](https://snowball-projects.github.io/optasy/)
 
 ## Use
 
@@ -18,14 +18,21 @@ Injured, inactive and reserve roster members are included independently of game
 participation. All 32 team logos are served locally with source and use records. Player photos are omitted. See
 [MEDIA.md](MEDIA.md) for asset provenance and limitations.
 
-First-string defenders appear above other defenders. Uniform-height rows keep
-the name on the left, three equal position/injury/status pills in the middle,
-and depth on the right. Injury labels abbreviate long descriptions; the popup
-preserves the full text. A dash means no matching injury entry; a question mark
-means unknown. Tiles retain a 300px minimum width and scroll horizontally. Borders distinguish first string, active roster,
-Questionable, Doubtful, Out, practice limitations, reserves and unknown status.
-The information popup contains the color legend. First string is depth-chart
-context, not a confirmed game starter. Injury status takes priority. Click, tap or press Enter/Space on a row to open a popup with the full
+Section headings and subtle dividers group source-backed depth levels, unknown
+depth, reserves, inactive/suspended players, practice squad and unknown roster
+context. The lowest current defensive depth rank determines an active player's
+section when multiple assignments exist. First string is chart context, not a
+confirmed game starter. Reserve and unknown roster status take precedence over
+depth for grouping.
+
+Uniform 56px rows put position immediately to the right of the name, as plain
+identity text. Only reported body-part injuries and meaningful game/practice
+statuses get highlighted pills. No per-row depth, reserve, active or healthy
+badges appear. A row without pills does not establish health. Missing report
+coverage remains visible; source vintage and freshness stay in information.
+Long injury descriptions are abbreviated in pills and retained fully in details.
+Tiles retain a 300px minimum width and scroll horizontally. Click, tap or press
+Enter/Space on a row to open a popup with full
 designations, availability explanation, source notes and supported role context.
 Hover and focus alone never open details. Escape, outside click and moving
 focus away dismiss the popup, which overlays the board without expanding a row. Information buttons

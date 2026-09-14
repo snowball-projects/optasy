@@ -12,10 +12,12 @@ button. Below it, one board starts with two equal vertical spaces and divides
 into narrower tiles as players are added. Small screens scroll the board
 horizontally. Each tile resolves the week's opponent and displays the opponent's **entire available defensive roster**, merging injury entries by
 stable identity and retaining report-only players. Offense and special teams
-are excluded from opponent tiles. Each player has a status-colored border and a short text label.
-First-string defenders appear above the other defenders. Each row keeps the name,
-three equal position/injury/status pills and depth on one line. Click or tap a
-player, or press Enter or Space, for roster, depth and injury details. Remove a player with its × button.
+are excluded from opponent tiles. Each row pairs the name with its position immediately
+to the right. Section headings show source-backed depth levels, reserves,
+inactive players, practice squad and unknown context. Only relevant injury or
+availability information gets highlighted pills; no badge implies no guarantee
+of health. Click or tap a player, or press Enter or Space, for full details.
+Remove a player with its × button.
 Injured and reserve roster members remain searchable. Selections stay in the
 browser; there are no accounts or league connections.
 

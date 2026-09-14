@@ -229,7 +229,7 @@ test("a defender listed first at kick returner is not mislabeled a defensive sta
   );
 });
 
-test("first-string grouping keeps injured first-string defenders and unknown depth without losing rows", () => {
+test("depth and roster sections preserve every defender without promoting reserves or unknown depth", () => {
   const { feed, week, comparison, member } = setup();
   comparison.entries.push({
     ...comparison.entries[0],
@@ -245,43 +245,78 @@ test("first-string grouping keeps injured first-string defenders and unknown dep
     groups[0].members.find((m) => m.id === member.id).status.key,
     "out",
   );
-  assert.ok(groups[0].members.every((m) => m.starter));
-  assert.ok(groups[1].members.every((m) => !m.starter));
   assert.deepEqual(
     new Set(groups.flatMap((g) => g.members.map((m) => m.id))),
     new Set(members.map((m) => m.id)),
   );
   assert.deepEqual(members, before);
   delete feed.depth;
-  const unknown = groupDefenders(opponentRoster(feed, comparison, week, now));
-  assert.equal(unknown.length, 1);
-  assert.equal(unknown[0].label, "Defenders · depth unknown");
+  assert.ok(
+    groupDefenders(opponentRoster(feed, comparison, week, now)).every(
+      (g) => !g.key.startsWith("depth-"),
+    ),
+  );
   assert.deepEqual(groupDefenders([]), []);
+  const roster = [
+    {
+      id: "second",
+      roster_status: "active",
+      depth: [{ rank: 3 }, { rank: 2 }],
+    },
+    { id: "first", roster_status: "active", depth: [{ rank: 1 }] },
+    { id: "reserve", roster_status: "injured-reserve", depth: [{ rank: 1 }] },
+    { id: "squad", roster_status: "practice-squad", depth: [{ rank: 1 }] },
+    { id: "unknown", roster_status: "unknown", depth: [{ rank: 1 }] },
+    { id: "unranked", roster_status: "active", depth: [] },
+    { id: "inactive", roster_status: "suspended", depth: [{ rank: 1 }] },
+    { id: "fourth", roster_status: "active", depth: [{ rank: 4 }] },
+  ];
+  assert.deepEqual(
+    groupDefenders(roster).map((g) => [g.label, g.members[0].id]),
+    [
+      ["First string", "first"],
+      ["Second string", "second"],
+      ["Depth 4", "fourth"],
+      ["Depth unknown", "unranked"],
+      ["Reserves", "reserve"],
+      ["Inactive / suspended", "inactive"],
+      ["Practice squad", "squad"],
+      ["Roster unknown", "unknown"],
+    ],
+  );
 });
 
-test("compact injury pills preserve missing coverage, multiple descriptions and full source text", () => {
-  const member = { injury: null, depth: [] };
-  assert.deepEqual(memberPills(member, false), { injury: "?", depth: "?" });
-  assert.equal(memberPills(member, true).injury, "—");
-  member.injury = { injury: "Hamstring" };
-  assert.equal(memberPills(member, true).injury, "Ham.");
+test("row pills show only reported injuries and meaningful availability, never routine depth or roster badges", () => {
+  for (const key of ["starter", "active", "reserve", "squad", "unknown"]) {
+    assert.deepEqual(memberPills({ injury: null, status: { key } }), {
+      injury: null,
+      status: null,
+      key: "neutral",
+    });
+  }
+  const member = {
+    injury: {
+      injury: "Hamstring",
+      game_status: "Out",
+      practice_status: "Limited",
+    },
+  };
+  assert.deepEqual(memberPills(member), {
+    injury: "Ham.",
+    status: "OUT",
+    key: "out",
+  });
   member.injury.injury = "Knee; Shoulder";
-  assert.equal(memberPills(member, true).injury, "Multi");
+  assert.equal(memberPills(member).injury, "Multi");
   assert.equal(member.injury.injury, "Knee; Shoulder");
   member.injury.injury = "Unrecognized source description";
-  assert.equal(memberPills(member, true).injury, "Other");
-  for (const [rank, expected] of [
-    [1, "1st"],
-    [2, "2nd"],
-    [3, "3rd"],
-    [4, "4th"],
-    [11, "11th"],
-    [12, "12th"],
-    [13, "13th"],
-  ]) {
-    member.depth = [{ rank }];
-    assert.equal(memberPills(member, true).depth, expected);
-  }
-  member.depth = [{ rank: 2 }, { rank: 1 }];
-  assert.equal(memberPills(member, true).depth, "1st");
+  assert.equal(memberPills(member).injury, "Other");
+  member.injury.game_status = "Not listed";
+  assert.equal(memberPills(member).status, "LP");
+  member.injury.practice_status = "Did not practice";
+  assert.equal(memberPills(member).status, "DNP");
+  member.injury.practice_status = "Full";
+  assert.equal(memberPills(member).status, null);
+  member.injury.game_status = "Unknown";
+  assert.equal(memberPills(member).status, "?");
 });

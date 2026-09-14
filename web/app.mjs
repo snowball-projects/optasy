@@ -1,4 +1,4 @@
-import { parseFeed } from "./feed.mjs?v=0.6.0";
+import { parseFeed } from "./feed.mjs?v=0.7.0";
 import {
   searchPlayers,
   opponentRoster,
@@ -10,13 +10,13 @@ import {
   comparePlayer,
   MAX_SELECTIONS,
   safeUrl,
-} from "./model.mjs?v=0.6.0";
+} from "./model.mjs?v=0.7.0";
 import {
   attachPopover,
   dismissPopover,
   isPopoverOpen,
   refreshPopover,
-} from "./popover.mjs?v=0.6.0";
+} from "./popover.mjs?v=0.7.0";
 
 const $ = (id) => document.getElementById(id);
 const STORAGE_KEY = "optasy.selected.v2";
@@ -391,7 +391,11 @@ function sourceDetails() {
     links.append(link(label, url));
   panel.append(links);
   const legend = node("div", undefined, "status-legend");
-  for (const [key, short, label] of STATUS_LEGEND)
+  for (const [key, short, label] of STATUS_LEGEND.filter(([key]) =>
+    ["questionable", "doubtful", "out", "limited", "dnp", "unknown"].includes(
+      key,
+    ),
+  ))
     legend.append(
       node("span", short + " · " + label, "legend-item state-" + key),
     );
@@ -399,7 +403,7 @@ function sourceDetails() {
     legend,
     node(
       "p",
-      "The equal pills show position, injury and status; depth is at the right. An injury dash means no matching entry, and ? means unknown. Multi means multiple injury descriptions. Injury and reserve designations take priority over depth-chart colors. First string is not a confirmed game starter; active is not a health designation. Roster and depth context describe the current team, not historical game rosters.",
+      "Position belongs beside the name. Section headings show current depth or roster context; the lowest source rank determines the depth section when a player has several assignments. First string is not a confirmed game starter. Highlighted pills show reported injury or limited availability; Multi means multiple descriptions and ? means unknown. No pill means no matching injury entry, not confirmed health. Roster and depth context describe the current team, not historical game rosters.",
       "small",
     ),
   );
@@ -581,16 +585,15 @@ function memberDetails(member, result) {
   return panel;
 }
 function renderMember(member, result) {
+  const { injury, status, key } = memberPills(member);
   const item = node("li", undefined, "injury"),
-    row = button("", null, "injury-row state-" + member.status.key);
+    row = button("", null, "injury-row state-" + key);
   row.dataset.focusKey = "injury:" + member.id;
   row.setAttribute(
     "aria-label",
     member.name +
       ", " +
       member.position +
-      ". " +
-      member.status.label +
       (member.injury
         ? ". Injury: " +
           member.injury.injury +
@@ -598,29 +601,22 @@ function renderMember(member, result) {
           member.injury.game_status +
           ". Practice: " +
           member.injury.practice_status
-        : ". No matching injury entry") +
-      ". Details.",
+        : ". No matching injury entry; availability is not confirmed") +
+      ". Activate for details.",
   );
-  const { injury, depth } = memberPills(member, Boolean(result.report));
-  const name = node("span", member.name, "injury-name");
-  const pills = node("span", undefined, "member-pills");
-  pills.setAttribute("aria-hidden", "true");
-  for (const [kind, text] of [
-    ["position", member.position],
-    ["injury", injury],
-    ["status", member.status.short],
-  ])
-    pills.append(node("span", text, "member-pill pill-" + kind));
-  const string = node("span", depth, "member-depth");
-  string.setAttribute("aria-hidden", "true");
-  row.append(name, pills, string);
-  row.setAttribute(
-    "aria-label",
-    row.getAttribute("aria-label") +
-      " Defensive depth: " +
-      (depth === "?" ? "unknown" : depth) +
-      ". Activate to open details.",
+  const identity = node("span", undefined, "member-identity");
+  identity.append(
+    node("span", member.name, "injury-name"),
+    node("span", member.position, "member-position"),
   );
+  row.append(identity);
+  if (injury || status) {
+    const pills = node("span", undefined, "member-pills");
+    pills.setAttribute("aria-hidden", "true");
+    if (injury) pills.append(node("span", injury, "member-pill pill-injury"));
+    if (status) pills.append(node("span", status, "member-pill pill-status"));
+    row.append(pills);
+  }
   attachPopover(row, () => memberDetails(member, result), {
     label: member.name + " roster and injury details",
   });
@@ -720,6 +716,7 @@ function renderCards() {
         if (!result.report)
           card.append(node("p", "Injury report unavailable", "roster-notice"));
         const entries = node("div", undefined, "injury-list");
+        entries.setAttribute("role", "group");
         entries.setAttribute(
           "aria-label",
           result.opponent + " defensive roster",
@@ -728,7 +725,7 @@ function renderCards() {
           const section = node(
             "section",
             undefined,
-            "roster-group" + (group.key === "first" ? " first-string" : ""),
+            "roster-group" + (group.key === "depth-1" ? " first-string" : ""),
           );
           section.setAttribute("aria-label", group.label);
           const heading = node("h3", undefined, "roster-group-title");

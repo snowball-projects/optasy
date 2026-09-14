@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.7.0 - 2026-09-14
+
+- Keep defender position beside the name as permanent identity text.
+- Move depth levels, reserves, inactive players, practice squad and unknown
+  context into section headings and subtle dividers.
+- Show only relevant injury and availability pills; remove routine active,
+  depth and reserve row badges while preserving uncertainty and full details.
+
 ## 0.6.0 - 2026-09-14
 
 - Open details only on click, tap or explicit keyboard activation. Preserve

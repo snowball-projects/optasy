@@ -21,19 +21,22 @@ and defensive injuries. The founder's September 13, 2026 decision is canonical i
   and information button; no sidebar, hero, page heading or directions.
   Keep accessible labels. One full board has at least two equal vertical spaces,
   narrowing to six player tiles; small screens scroll horizontally. Preserve
-  complete readable reports with a 300px minimum tile width. Group first-string
-  defenders above other defenders using verified current depth evidence. Rows
-  have uniform heights: name left, three equal position/injury/status pills in
-  the middle, string right. Details open only on click/tap or Enter/Space, never
+  complete readable reports with a 300px minimum tile width. Use section headings
+  and subtle dividers for current defensive depth ranks, reserves, inactive
+  players, practice squad and unknown depth/roster context. Keep name and plain
+  position text together, with position immediately right of the name. Uniform
+  rows show only relevant injury/availability pills; no repeated depth, reserve
+  or routine healthy/active badges. Missing evidence never means health.
+  Details open only on click/tap or Enter/Space, never
   on hover or focus alone. Use accessible popups, not expanding page sections. Keep source/timestamp/privacy/licensing
   details in information popups and operational exceptions visibly concise.
 - Include injured/reserve roster members. Join by stable source identities and
   current team context, not game-active filters or player names.
 - Show the complete available current opponent defensive roster, including reserves and practice
-  squad, with status-colored borders and text labels. Merge injuries by stable
+  squad, with relevant injury/status highlights. Merge injuries by stable
   ID, preserving unmatched defensive report rows. Use reviewed depth-chart evidence for
   first-string context at defensive chart positions only; never infer starters or health from absence in an
-  injury report. Injury designations override starter colors.
+  injury report. Reserve and unknown roster status take precedence over depth for grouping.
 - Preserve every available source injury row during collection. Opponent tiles
   show defensive positions only; exclude offense, special teams and unknown
   positions. This founder correction supersedes the earlier all-position display.

@@ -1,4 +1,4 @@
-import { TEAMS, POSITIONS, validateFeed, safeUrl } from "./feed.mjs?v=0.6.0";
+import { TEAMS, POSITIONS, validateFeed, safeUrl } from "./feed.mjs?v=0.7.0";
 
 export { TEAMS, POSITIONS, validateFeed, safeUrl };
 export const MAX_SELECTIONS = 6;
@@ -321,20 +321,37 @@ const STATUS = Object.fromEntries(
 );
 
 export function groupDefenders(members) {
-  const first = members.filter((member) => member.starter);
-  const rest = members.filter((member) => !member.starter);
-  return [
-    { key: "first", label: "First string", members: first },
-    {
-      key: "other",
-      label: first.length
-        ? "Other defenders"
-        : members.some((member) => member.depth.length)
-          ? "Defenders"
-          : "Defenders · depth unknown",
-      members: rest,
-    },
-  ].filter((group) => group.members.length);
+  const groups = new Map();
+  for (const member of members) {
+    let key, label, order;
+    if (member.roster_status === "practice-squad") {
+      [key, label, order] = ["squad", "Practice squad", 102];
+    } else if (
+      ["inactive", "suspended", "exempt"].includes(member.roster_status)
+    ) {
+      [key, label, order] = ["unavailable", "Inactive / suspended", 101];
+    } else if (
+      ["reserve", "injured-reserve", "pup", "nfi"].includes(
+        member.roster_status,
+      )
+    ) {
+      [key, label, order] = ["reserve", "Reserves", 100];
+    } else if (member.roster_status !== "active") {
+      [key, label, order] = ["unknown", "Roster unknown", 103];
+    } else if (member.depth.length) {
+      const rank = Math.min(...member.depth.map((entry) => entry.rank));
+      key = "depth-" + rank;
+      label =
+        ["First string", "Second string", "Third string"][rank - 1] ||
+        "Depth " + rank;
+      order = rank;
+    } else {
+      [key, label, order] = ["unranked", "Depth unknown", 99];
+    }
+    if (!groups.has(key)) groups.set(key, { key, label, order, members: [] });
+    groups.get(key).members.push(member);
+  }
+  return [...groups.values()].sort((a, b) => a.order - b.order);
 }
 
 const INJURY_PILLS = {
@@ -374,30 +391,34 @@ const INJURY_PILLS = {
   "not injury related - personal matter": "Pers.",
 };
 
-export function memberPills(member, hasReport) {
-  let injury = hasReport ? "—" : "?";
-  if (member.injury) {
-    const parts = [
-      ...new Set(
-        member.injury.injury
-          .split(";")
-          .map((part) => part.trim())
-          .filter(Boolean),
-      ),
-    ];
-    injury =
-      parts.length > 1
-        ? "Multi"
-        : INJURY_PILLS[parts[0]?.toLowerCase()] || "Other";
-  }
-  const rank = member.depth.length
-    ? Math.min(...member.depth.map((entry) => entry.rank))
-    : null;
-  const suffix =
-    rank % 100 >= 11 && rank % 100 <= 13
-      ? "th"
-      : { 1: "st", 2: "nd", 3: "rd" }[rank % 10] || "th";
-  return { injury, depth: rank === null ? "?" : rank + suffix };
+export function memberPills(member) {
+  if (!member.injury) return { injury: null, status: null, key: "neutral" };
+  const entry = member.injury;
+  const parts = [
+    ...new Set(
+      entry.injury
+        .split(";")
+        .map((part) => part.trim())
+        .filter(Boolean),
+    ),
+  ];
+  const injury =
+    parts.length > 1
+      ? "Multi"
+      : INJURY_PILLS[parts[0]?.toLowerCase()] || "Other";
+  let key = {
+    Out: "out",
+    Doubtful: "doubtful",
+    Questionable: "questionable",
+    Unknown: "unknown",
+  }[entry.game_status];
+  if (!key && entry.practice_status === "Did not practice") key = "dnp";
+  if (!key && entry.practice_status === "Limited") key = "limited";
+  return {
+    injury,
+    status: key ? STATUS[key].short : null,
+    key: key || "reported",
+  };
 }
 const POSITION_ORDER = [
   "QB",

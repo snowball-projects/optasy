@@ -25,7 +25,7 @@ draft, waiver, trade, general ranking or start/sit engine.
 
 ## Implemented behavior
 
-Version 0.6.0 is a static search-and-report dashboard using the approved
+Version 0.7.0 is a static search-and-report dashboard using the approved
 nflverse-data release files. It supports six selected players, automatic
 opponents, explicit byes, source-relative completeness, missing-report states,
 unknown kickoff, started games and source/collection age warnings. Selections
@@ -41,13 +41,16 @@ making the data unreadable. Each tile shows player name, current team, position,
 team mark, opponent and the opponent's available defensive roster with matching injury data.
 
 The board includes every current opponent defensive roster member, including reserve and
-practice-squad members, plus unmatched defensive injury entries. Rows show the name,
-three equal position/injury/status pills and depth on the right, all on one
-uniform-height row. Tiles stop narrowing at 300px and scroll horizontally.
-First-string defenders form a separate group above the other defenders.
-Current depth rank 1 at a defensive chart position is labeled first string, not a confirmed game starter.
-Reported injury designations override depth colors. Reserve, practice and
-unknown statuses remain distinct; the color legend is behind information. Only clicking, tapping or pressing Enter/Space on a row opens a popup with
+practice-squad members, plus unmatched defensive injury entries. Uniform-height
+rows pair each name with plain position text immediately on its right. Only
+reported injury and relevant availability get highlighted pills. Depth and
+reserve labels belong to section headings, never repeated row badges.
+Current active defenders group by their lowest supported defensive depth rank;
+reserves, inactive/suspended players, practice squad, unknown depth and unknown
+roster context remain separate. Missing depth cannot create a first-string
+assignment. First string is not a confirmed game starter. A badge-free row
+means no matching injury entry, not healthy or available. Tiles retain a 300px
+minimum and scroll horizontally. Only click, tap or Enter/Space opens a popup with
 full statuses, source notes, availability limits and plausible defensive-role
 relevance where supported. Details do not expand the page. No direct individual
 coverage assignment, replacement quality, numerical boost or demonstrated
