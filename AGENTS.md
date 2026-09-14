@@ -8,7 +8,8 @@ injury report. The founder's September 13, 2026 decision is canonical in
 ## Scope and sources
 
 - Read [README.md](README.md), [docs/DASHBOARD.md](docs/DASHBOARD.md),
-  [docs/DATA_SOURCES.md](docs/DATA_SOURCES.md) and relevant source before editing.
+  [docs/DATA_SOURCES.md](docs/DATA_SOURCES.md), [docs/MEDIA.md](docs/MEDIA.md)
+  and relevant source before editing.
   Read the collection's canonical principles at
   `../snowball-projects.github.io/src/pages/principles.md` for product,
   architecture, public-claim, data or operating decisions.
@@ -16,6 +17,13 @@ injury report. The founder's September 13, 2026 decision is canonical in
   roster construction/imports, league accounts, ESPN Fantasy connections,
   multi-league management, drafts, waivers, trades, rankings or start/sit engine.
   These are excluded scope, not deferred features.
+- Follow the founder's current layout: compact top toolbar with search, week
+  and information button; no sidebar, hero, visible headings or directions.
+  Keep accessible labels. One full board has at least two equal vertical spaces,
+  narrowing to six player tiles; small screens scroll horizontally. Preserve
+  complete readable reports. Injury details open on hover, focus or tap in
+  popups, not expanding page sections. Keep source/timestamp/privacy/licensing
+  details in information popups and operational exceptions visibly concise.
 - Include injured/reserve roster members. Join by stable source identities and
   current team context, not game-active filters or player names.
 - Show every available opponent report row across all positions. Defensive
@@ -24,10 +32,16 @@ injury report. The founder's September 13, 2026 decision is canonical in
   times. Unknown vintage stays unknown. Missing coverage is not a healthy team.
   Do not fabricate point boosts, individual coverage assignments or injury-count
   advantage scores.
-- Use only the three reviewed nflverse-data release CSVs under their explicit
+- For roster, schedule and injury data, use only the three reviewed nflverse-data
+  release CSVs under their explicit
   CC BY 4.0 data grant. The publisher-license basis and upstream provenance limit
   are documented. Recheck terms and coverage when expanding/replacing sources;
   public access alone is insufficient.
+- Media are a separate reviewed allowlist in `web/team-assets.json` and
+  [docs/MEDIA.md](docs/MEDIA.md): twelve local public-domain team-logo SVGs,
+  with typographic abbreviations elsewhere. Do not extend the data grant to
+  images, hotlink provider media or add unreviewed portraits. Preserve media
+  provenance, checksums and trademark distinctions; do not invent player photos.
 - Collect centrally, at zero service cost. No provider calls from visitors,
   paid plans, billing changes, accounts or credentials in browser code.
   Retain the last deployed artifact after collection failure; fail clearly.
@@ -53,7 +67,8 @@ Automated source tests use synthetic source-shaped fixtures, never network.
 
 For publication, run `npm run refresh` and `npm run build:live`, inspect the
 staged diff, confirm remote/branch/license/data provenance, and verify desktop,
-mobile and keyboard flows plus the final GitHub Pages deployment. Source CI
+mobile and keyboard flows, two-to-six tile layouts, horizontal scrolling and
+hover/focus/tap popup behavior plus the final GitHub Pages deployment. Source CI
 runs both suites; hourly data refresh runs the Node suite. Keep artifact
 retention at one day and standard public Ubuntu runners. Do not change
 repository visibility, paid capacity or history.

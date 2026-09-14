@@ -27,3 +27,10 @@ available matching injury entry is retained. No endorsement by nflverse or the
 NFL is implied. Data are provided without warranties under the source license;
 underlying report timestamps and independent completeness are not established.
 See docs/DATA_SOURCES.md for the source review and provenance limits.
+
+The dashboard also includes twelve individually reviewed team logos from
+Wikimedia Commons, identified as public domain on their source file pages.
+Team trademarks remain with their owners; their use identifies the teams and
+does not imply endorsement. These marks are not original snowball software.
+web/team-assets.json records individual source URLs, license statements,
+revisions, checksums and sanitization. See docs/MEDIA.md for details and limits.

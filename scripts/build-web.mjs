@@ -1,5 +1,6 @@
 import { cp, mkdir, rm, readFile, writeFile } from "node:fs/promises";
-import { parseFeed } from "../web/feed.mjs";
+import { createHash } from "node:crypto";
+import { parseFeed, TEAMS, safeUrl } from "../web/feed.mjs";
 import { sourceDefinitions, PUBLICATION_POLICY } from "./refresh-data.mjs";
 
 const root = new URL("../", import.meta.url);
@@ -17,9 +18,27 @@ const files = [
   "app.mjs",
   "model.mjs",
   "feed.mjs",
+  "popover.mjs",
+  "team-assets.json",
   "example.json",
   "icon.svg",
 ];
+const teamAssets = JSON.parse(
+  await readFile(new URL("web/team-assets.json", root), "utf8"),
+);
+for (const [team, asset] of Object.entries(teamAssets)) {
+  if (
+    !TEAMS.includes(team) ||
+    asset.url !== `team-logos/${team}.svg` ||
+    !safeUrl(asset.source) ||
+    !safeUrl(asset.license_url)
+  )
+    throw new Error("Invalid team image provenance.");
+  const svg = await readFile(new URL(`web/${asset.url}`, root), "utf8");
+  if (createHash("sha256").update(svg).digest("hex") !== asset.sha256)
+    throw new Error(`Team image changed without provenance review: ${team}`);
+  files.push(asset.url);
+}
 let current;
 try {
   current = await readFile(new URL("web/current.json", root), "utf8");
@@ -56,6 +75,7 @@ for (const name of ["styles.css", "app.mjs", "icon.svg"]) {
 }
 await rm(new URL("dist/", root), { recursive: true, force: true });
 await mkdir(new URL("dist/", root));
+await mkdir(new URL("dist/team-logos/", root));
 for (const file of files)
   await cp(new URL("web/" + file, root), new URL("dist/" + file, root));
 for (const file of ["LICENSE", "NOTICE"])

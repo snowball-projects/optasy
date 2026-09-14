@@ -4,14 +4,17 @@ A snowball project. Find an NFL player and see their opponent's injury report.
 
 [Open optasy](https://snowball-projects.github.io/optasy/) ·
 [Product scope](docs/PRODUCT.md) · [Dashboard guide](docs/DASHBOARD.md) ·
-[Data sources](docs/DATA_SOURCES.md)
+[Data sources](docs/DATA_SOURCES.md) · [Image credits](docs/MEDIA.md)
 
 Search the current roster source by name, team or position and select up to six
-players. Each card resolves the week's opponent and displays **every available
-entry** in that team's report, including offense and special teams. Remove a
-player to change the selection. Injured and reserve roster members remain
-searchable. Selections stay in the browser; there are no accounts or league
-connections.
+players. A compact toolbar holds search, the week selector and an information
+button. Below it, one board starts with two equal vertical spaces and divides
+into narrower tiles as players are added. Small screens scroll the board
+horizontally. Each tile resolves the week's opponent and displays **every
+available entry** in that team's report, including offense and special teams.
+Hover, focus or tap an injury for its details. Remove a player with its × button.
+Injured and reserve roster members remain searchable. Selections stay in the
+browser; there are no accounts or league connections.
 
 The dashboard defaults to the current regular-season NFL week when the schedule
 covers it. Explicit byes, missing schedules/reports, changed kickoffs, started
@@ -19,14 +22,19 @@ games and old collections have distinct states. Broad defensive-role context
 is available within report entries. Injury counts do not measure advantage;
 optasy supplies no point boosts, rankings or start/sit verdicts.
 
+Twelve individually reviewed team logos are served locally, with typographic
+team abbreviations elsewhere. Player photos are omitted pending a practical
+licensed source. Source details, timestamps, privacy and licensing sit behind
+the information buttons; the board keeps only compact operational exceptions.
+
 ## Current data and honest limits
 
 The dashboard uses roster, schedule and injury CSV releases from **nflverse-data**
 under its explicit **CC BY 4.0 data license**. The integration preserves all
 matching injury rows and credits the source; independent completeness against
 original team reports is not established. Source report dates are currently
-absent. The UI distinguishes that unknown vintage from file modification and
-optasy collection times.
+absent. Information popups distinguish that unknown vintage from file
+modification and optasy collection times.
 
 A shared GitHub Actions run checks the three sources hourly at minute 23.
 Upstream injury and roster files normally update daily, not live. Schedules
@@ -112,6 +120,8 @@ records. The previous dashboard is preserved in Git at
 Copyright 2026 snowball. Original software, documentation and synthetic fixtures
 use the [MIT License](LICENSE). Published nflverse data retain **CC BY 4.0**;
 third-party packages and data retain their own terms. See [NOTICE](NOTICE).
-The software license does not cover private inputs or personal writing.
+Team logos have their own documented [public-domain bases and trademark
+status](docs/MEDIA.md). The software license does not cover team marks, private
+inputs or personal writing.
 
 [Operations](https://snowball-projects.github.io/operations/#optasy)

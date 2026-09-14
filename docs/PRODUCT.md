@@ -23,23 +23,45 @@ draft, waiver, trade, general ranking or start/sit engine.
 
 ## Implemented behavior
 
-Version 0.3.0 is a static search-and-report dashboard using the approved
+Version 0.4.0 is a static search-and-report dashboard using the approved
 nflverse-data release files. It supports six selected players, automatic
 opponents, explicit byes, source-relative completeness, missing-report states,
 unknown kickoff, started games and source/collection age warnings. Selections
 are local browser IDs, not a league roster.
 
-Report entries show separate game designation and practice participation.
-Expandable context explains plausible defensive-role relevance where supported
-by positional labels. No direct individual coverage assignment, replacement
-quality, numerical boost or demonstrated fantasy effect is inferred.
+The founder's latest visual direction uses one compact top toolbar for search,
+week selection and an information button. There is no sidebar, hero copy,
+visible page heading or instructional block. Keep accessible names and
+screen-reader guidance. The rest of the viewport belongs to one board of equal
+vertical player tiles: at least two spaces, narrowing as selections grow to six.
+Tile contents adapt to width; narrow screens scroll horizontally instead of
+making the data unreadable. Each tile shows player name, current team, position,
+team mark, opponent and the opponent's complete available report.
+
+Report rows keep names, positions, injuries and separate compact game/practice
+designations visible. Hovering, focusing or tapping a row opens a popup with
+full statuses, source notes, availability limits and plausible defensive-role
+relevance where supported. Details do not expand the page. No direct individual
+coverage assignment, replacement quality, numerical boost or demonstrated
+fantasy effect is inferred.
+
+Source attribution, report/file/collection timestamps, refresh limits, privacy
+and licensing live behind information buttons. Missing data, byes, started
+games, fictional mode and failures retain concise visible states. Reducing copy
+does not remove these distinctions or silently hide missing coverage.
+
+Twelve individually reviewed public-domain primary team logos are hosted
+locally, with ordinary team abbreviations for the other teams. These fallback
+identifiers are not presented as logos. Portraits are omitted until a practical
+licensed source is established. [MEDIA.md](MEDIA.md) owns asset provenance and
+the limits of the selected public-domain determinations.
 
 The source review found current 2026 injuries despite older documentation
 claiming the feed ended after 2024. The current CSV omits report publication
-dates: the UI says so. File update and collection times do not replace report
-vintage. Source coverage is partial until independently established; every
-available matching row is displayed. A missing team/week never becomes an
-assertion that nobody is injured.
+dates: information details say so. File update and collection times do not
+replace report vintage. Source coverage is partial until independently
+established; every available matching row is displayed. A missing team/week
+never becomes an assertion that nobody is injured.
 
 ## Operating boundary
 

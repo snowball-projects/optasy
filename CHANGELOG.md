@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.4.0 - 2026-09-13
+
+- Replace explanatory page copy with a compact top search/week/information
+  toolbar and a full board of equal vertical player tiles, starting with two
+  spaces and narrowing to six; keep horizontal scrolling on small screens.
+- Keep complete opponent injury rows concise. Move full designations, notes,
+  availability limits and role context into hover/focus/tap popups.
+- Move source, timestamp, privacy and licensing detail behind information
+  buttons while preserving compact missing-data, game and failure states.
+- Add twelve individually reviewed local team logos with recorded provenance
+  and checksums; retain team-abbreviation fallbacks and omit player portraits.
+  Keep the existing shared data collection and zero-cost deployment unchanged.
+
 ## 0.3.0 - 2026-09-13
 
 - Replace manual snapshots with NFL player search, six removable selections,

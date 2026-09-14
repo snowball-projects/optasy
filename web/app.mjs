@@ -6,6 +6,12 @@ import {
   MAX_SELECTIONS,
   safeUrl,
 } from "./model.mjs";
+import {
+  attachPopover,
+  dismissPopover,
+  isPopoverOpen,
+  refreshPopover,
+} from "./popover.mjs";
 
 const $ = (id) => document.getElementById(id);
 const STORAGE_KEY = "optasy.selected.v2";
@@ -16,7 +22,8 @@ let feed = null,
   loading = false;
 let lastCheck = 0,
   autoWeek = true,
-  lastError = "";
+  lastError = "",
+  teamAssets = {};
 const dateTime = new Intl.DateTimeFormat(undefined, {
   month: "short",
   day: "numeric",
@@ -24,12 +31,19 @@ const dateTime = new Intl.DateTimeFormat(undefined, {
   minute: "2-digit",
   timeZoneName: "short",
 });
+const kickoffTime = new Intl.DateTimeFormat(undefined, {
+  month: "short",
+  day: "numeric",
+  hour: "numeric",
+  minute: "2-digit",
+});
 const day = new Intl.DateTimeFormat(undefined, {
   month: "short",
   day: "numeric",
   year: "numeric",
   timeZone: "UTC",
 });
+const mobile = () => matchMedia("(max-width: 720px)").matches;
 function node(tag, text, className) {
   const el = document.createElement(tag);
   if (text !== undefined) el.textContent = text;
@@ -39,7 +53,7 @@ function node(tag, text, className) {
 function button(text, action, className) {
   const el = node("button", text, className);
   el.type = "button";
-  el.addEventListener("click", action);
+  if (action) el.addEventListener("click", action);
   return el;
 }
 function link(label, url) {
@@ -61,6 +75,12 @@ function vintage(item) {
       " (time not supplied)"
     );
   return "not supplied";
+}
+function facts(pairs) {
+  const list = node("dl");
+  for (const [label, value] of pairs)
+    list.append(node("dt", label), node("dd", value));
+  return list;
 }
 function announce(text) {
   $("message").textContent = text;
@@ -84,69 +104,88 @@ function saveSelection() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(selected));
   } catch {
-    /* Storage is optional. */
+    /* Optional storage. */
   }
 }
 function sourceFor(id) {
   return feed.sources.find((source) => source.id === id);
 }
+function openSearch() {
+  dismissPopover();
+  $("search").focus();
+}
+function teamMark(team) {
+  const asset = teamAssets[team];
+  const mark = node(
+    "span",
+    undefined,
+    "team-mark" + (asset ? "" : " team-monogram"),
+  );
+  mark.setAttribute("aria-hidden", "true");
+  if (asset) {
+    const img = document.createElement("img");
+    img.src = asset.url;
+    img.alt = "";
+    img.width = 64;
+    img.height = 64;
+    img.addEventListener(
+      "error",
+      () => {
+        mark.replaceChildren(document.createTextNode(team));
+        mark.classList.add("team-monogram");
+      },
+      { once: true },
+    );
+    mark.append(img);
+  } else mark.textContent = team;
+  return mark;
+}
 function closeSearch() {
   $("search-results").hidden = true;
 }
 function renderSearch() {
-  const list = $("search-results");
-  const focusId = document.activeElement.dataset.playerId;
+  const list = $("search-results"),
+    focusId = document.activeElement.dataset.playerId;
   list.replaceChildren();
   if (!feed || !$("search").value.trim()) {
     closeSearch();
     return;
   }
-  const matches = searchPlayers(feed, $("search").value, selected).slice(0, 20);
+  const matches = searchPlayers(feed, $("search").value, selected).slice(0, 30);
   list.hidden = false;
-  if (!matches.length)
-    list.append(
-      node(
-        "p",
-        "No matching rostered players. Try a name or team abbreviation.",
-        "search-empty",
-      ),
-    );
+  if (!matches.length) list.append(node("p", "No matches", "search-empty"));
   if (selected.length >= MAX_SELECTIONS)
     list.append(
-      node(
-        "p",
-        "Six players selected. Remove one to add another.",
-        "search-empty",
-      ),
+      node("p", "Six selected. Remove one to add another.", "search-empty"),
     );
   for (const player of matches) {
-    const chosen = selected.includes(player.id);
     const choice = button("", () => addPlayer(player), "search-choice");
     choice.dataset.playerId = player.id;
-    choice.disabled = chosen || selected.length >= MAX_SELECTIONS;
+    choice.disabled = selected.length >= MAX_SELECTIONS;
     choice.setAttribute(
       "aria-label",
-      (chosen ? "Selected: " : "Add ") +
-        player.name +
-        ", " +
-        player.team +
-        ", " +
-        player.position,
+      "Add " + player.name + ", " + player.team + ", " + player.position,
     );
     const info = node("span", undefined, "player-info");
-    info.append(node("strong", player.name));
-    const roster =
-      player.roster_status !== "active"
-        ? " · " + player.roster_status.replaceAll("-", " ")
-        : "";
-    info.append(node("small", player.team + " · " + player.position + roster));
-    choice.append(info, node("span", chosen ? "Added" : "+", "add"));
+    info.append(
+      node("strong", player.name),
+      node(
+        "small",
+        player.team +
+          " · " +
+          player.position +
+          (player.roster_status !== "active"
+            ? " · " + player.roster_status.replaceAll("-", " ")
+            : ""),
+      ),
+    );
+    choice.append(info, node("span", "+", "add"));
     list.append(choice);
     if (focusId === player.id) choice.focus({ preventScroll: true });
   }
   $("search-status").textContent =
     matches.length +
-    " matching players shown. Use Tab or Down Arrow to reach results.";
+    " matching players. Use Tab or Down Arrow to reach results.";
 }
 function addPlayer(player) {
   player = feed.players.find((candidate) => candidate.id === player.id);
@@ -160,456 +199,500 @@ function addPlayer(player) {
   saveSelection();
   $("search").value = "";
   closeSearch();
+  dismissPopover();
   renderCards();
   announce(player.name + " added.");
-  $("search").focus();
+  if (mobile()) {
+    const card = [...$("cards").children].find(
+      (el) => el.dataset.playerId === player.id,
+    );
+    card.scrollIntoView({ block: "nearest", inline: "nearest" });
+    card.querySelector(".remove").focus({ preventScroll: true });
+  } else $("search").focus();
 }
 function removePlayer(id, name) {
   const index = selected.indexOf(id);
   selected = selected.filter((value) => value !== id);
   saveSelection();
+  dismissPopover();
   renderCards();
   announce(name + " removed.");
   const removes = [...document.querySelectorAll(".remove")];
-  (removes[Math.min(index, removes.length - 1)] || $("search")).focus();
+  const target = removes[Math.min(index, removes.length - 1)];
+  if (target) target.focus();
+  else openSearch();
 }
 function renderWeeks() {
-  const select = $("week");
-  select.replaceChildren();
-  const current = currentWeek(feed);
+  const select = $("week"),
+    current = currentWeek(feed);
   if (activeMode === "example") {
     if (!weekKey) weekKey = feed.weeks.at(-1)?.key || "";
-  } else if (autoWeek || !feed.weeks.some((week) => week.key === weekKey)) {
+  } else if (autoWeek || !feed.weeks.some((week) => week.key === weekKey))
     weekKey = current?.key || "";
-  }
-  if (!weekKey) {
-    const option = node("option", "Current week unavailable");
-    option.value = "";
-    select.append(option);
-  }
-  for (const week of feed.weeks) {
-    const option = node(
-      "option",
-      week.label +
-        (activeMode === "live" && current?.key === week.key
-          ? " · current"
-          : ""),
-    );
-    option.value = week.key;
-    select.append(option);
+  const expected =
+    feed.weeks.map((week) => week.key).join("|") + "|" + Boolean(weekKey);
+  if (select.dataset.options !== expected) {
+    select.replaceChildren();
+    if (!weekKey) {
+      const option = node("option", "Week unavailable");
+      option.value = "";
+      select.append(option);
+    }
+    for (const week of feed.weeks) {
+      const option = node("option", week.label + " · " + week.season);
+      option.value = week.key;
+      select.append(option);
+    }
+    select.dataset.options = expected;
   }
   select.value = weekKey;
-  select.disabled = feed.weeks.length === 0;
-  const season = feed.weeks.find((week) => week.key === weekKey)?.season;
-  document.querySelector('label[for="week"]').textContent =
-    "NFL week" + (season ? " · " + season : "");
+  select.disabled = !feed.weeks.length;
 }
-function renderStatus(error = lastError) {
+function renderStatus() {
   const status = $("data-status");
   status.replaceChildren();
-  status.className = "notice";
-  if (error) {
-    status.classList.add("warning");
-    const retained =
-      feed && activeMode === "example"
-        ? "Current NFL data is unavailable. The fictional example is still shown; these players, games and injuries are invented. "
-        : feed
-          ? "Refresh unavailable. Showing the previously loaded data; check its collection time. "
-          : "Current NFL data is unavailable. ";
-    status.append(node("p", retained + error));
-    status.append(button("Try again", () => loadFeed("live")));
-    if (!feed)
-      status.append(button("Try fictional example", () => loadFeed("example")));
-    return;
-  }
-  if (activeMode === "example") {
-    status.classList.add("warning");
-    status.append(
-      node(
-        "p",
-        "Fictional example. Players, matchups and injuries below are invented; this is not current NFL data.",
-      ),
-    );
-    status.append(button("Back to NFL players", () => loadFeed("live")));
-    return;
-  }
-  const age = (Date.now() - Date.parse(feed.generated_at)) / 3600000;
-  if (age > 24) status.classList.add("warning");
-  const prefix = age > 24 ? "Collection is over 24 hours old. " : "";
-  status.append(
-    node(
-      "p",
-      prefix +
-        "NFL reports via nflverse. Injury files update daily; the source does not supply report timestamps.",
+  status.hidden =
+    !lastError &&
+    activeMode !== "example" &&
+    (!feed || Date.now() - Date.parse(feed.generated_at) <= 86400000);
+  $("info").classList.toggle(
+    "stale",
+    Boolean(
+      lastError ||
+      (feed && Date.now() - Date.parse(feed.generated_at) > 86400000),
     ),
   );
-  status.append(node("span", "Collected " + time(feed.generated_at), "small"));
+  if (status.hidden) return;
+  status.append(
+    node(
+      "span",
+      activeMode === "example"
+        ? "Fictional example"
+        : lastError
+          ? "Refresh unavailable"
+          : "Old collection",
+    ),
+  );
+  if (lastError) status.append(button("Retry", () => loadFeed("live")));
+  else if (activeMode === "example")
+    status.append(button("Exit", () => loadFeed("live")));
 }
-function renderSources() {
-  const details = $("source-details");
-  details.replaceChildren();
-  if (!feed) {
-    details.append(
+function sourceDetails() {
+  const panel = node("div");
+  panel.append(node("h2", "Sources & information"));
+  if (lastError)
+    panel.append(
       node(
         "p",
-        "Current roster, schedule and injury data could not be loaded.",
+        (activeMode === "example" && feed
+          ? "Fictional data remains on screen. "
+          : feed
+            ? "Previously loaded data remains on screen. "
+            : "Current NFL data is unavailable. ") + lastError,
       ),
     );
-  } else {
-    details.append(
+  if (activeMode === "example")
+    panel.append(
+      node(
+        "p",
+        "Fictional example: every player, matchup and injury is invented.",
+      ),
+    );
+  if (feed) {
+    panel.append(
       node(
         "p",
         activeMode === "example"
-          ? "This fixture was created by snowball to demonstrate search, complete reports and missing-data states."
-          : "One shared collection runs hourly, subject to GitHub Actions delays. nflverse injury and roster files normally update once daily; its schedule updates more often. An hourly download cannot make a daily report live. nflverse data are used under CC BY 4.0; optasy filters roster membership, normalizes fields and joins weekly opponents. No endorsement is implied.",
+          ? "Synthetic data for trying the interface. These are not NFL reports."
+          : "nflverse injury and roster files normally update daily. optasy checks hourly; GitHub runs can be delayed. Report timestamps are not supplied by the current injury source.",
       ),
+    );
+    panel.append(
+      facts([
+        ["Collected", time(feed.generated_at)],
+        ["Selections", selected.length + " / " + MAX_SELECTIONS],
+      ]),
     );
     for (const [label, meta] of [
       ["Roster", feed.roster],
       ["Schedule", feed.schedule],
     ]) {
-      const source = sourceFor(meta.source_id);
-      const row = node("p", undefined, "source-meta");
-      row.append(
-        node("strong", label + ": "),
-        link(source.label, source.url),
-        document.createTextNode(
-          " · source vintage " +
-            vintage(meta) +
-            " · file updated " +
-            time(meta.source_updated_at) +
-            " · collected " +
-            time(meta.retrieved_at) +
-            ".",
-        ),
+      const block = node("div", undefined, "source-block"),
+        source = sourceFor(meta.source_id);
+      block.append(
+        link(label + " · " + source.label, source.url),
+        facts([
+          ["Report vintage", vintage(meta)],
+          ["File updated", time(meta.source_updated_at)],
+          ["Collected", time(meta.retrieved_at)],
+        ]),
       );
-      details.append(row);
+      panel.append(block);
     }
+    const block = node("div", undefined, "source-block");
     for (const source of feed.sources) {
-      const row = node("p", undefined, "source-meta");
-      row.append(
+      const p = node("p");
+      p.append(
         link(source.label, source.url),
         document.createTextNode(" · "),
         link(
-          activeMode === "example" ? "Source & license" : "Data license",
+          activeMode === "example" ? "License" : "CC BY 4.0",
           source.terms_url,
         ),
       );
-      details.append(row);
+      block.append(p);
     }
-    details.append(
+    panel.append(
+      block,
       node(
         "p",
-        "Report vintage is when the underlying injury report was issued. File update is when the publisher changed its download. Collection is when optasy retrieved it. These are separate facts. Unknown vintage or missing entries never establish a healthy opponent.",
+        activeMode === "example"
+          ? "The example is a static fictional fixture and does not update."
+          : "nflverse data are filtered, normalized and joined by optasy. Source-file updates and collection times are not report publication times. Complete available rows are shown; independent completeness and current availability are not established.",
+        "small",
       ),
     );
   }
-  details.append(
-    link(
-      "Source review and operating limits",
+  panel.append(
+    node(
+      "p",
+      "Hover, focus or tap an injury for details. Game and practice designations are separate. Role relevance is a possibility, not an individual assignment or a measured fantasy effect.",
+      "small",
+    ),
+  );
+  panel.append(
+    node(
+      "p",
+      "Selections stay in this browser. No accounts, analytics or per-visitor provider requests.",
+      "small",
+    ),
+  );
+  const links = node("div", undefined, "info-links");
+  for (const [label, url] of [
+    ["snowball", "https://snowball-projects.github.io/"],
+    ["Source", "https://github.com/snowball-projects/optasy"],
+    [
+      "Data review",
       "https://github.com/snowball-projects/optasy/blob/main/docs/DATA_SOURCES.md",
-    ),
-  );
-  details.append(
-    node(
-      "p",
-      "Selections are stored only in this browser. Search makes no requests to data providers. No accounts, league connections or analytics.",
-    ),
-  );
+    ],
+    [
+      "Image credits",
+      "https://github.com/snowball-projects/optasy/blob/main/docs/MEDIA.md",
+    ],
+    ["Operations", "https://snowball-projects.github.io/operations/#optasy"],
+    ["MIT", "https://snowball-projects.github.io/optasy/LICENSE"],
+  ])
+    links.append(link(label, url));
+  panel.append(links);
+  if (!feed)
+    panel.append(
+      button("Try fictional example", () => {
+        dismissPopover();
+        loadFeed("example");
+      }),
+    );
+  return panel;
 }
-function renderEntry(entry) {
-  const item = node("li", undefined, "injury");
-  const row = node("div", undefined, "injury-main");
-  row.append(node("span", entry.position, "role"));
-  const info = node("div");
-  info.append(node("p", entry.name, "injury-name"));
-  info.append(
+function reportDetails(result) {
+  const panel = node("div"),
+    report = result.report;
+  panel.append(node("h2", (result.opponent || "Opponent") + " report"));
+  if (!report) {
+    panel.append(node("p", result.message));
+    return panel;
+  }
+  const source = sourceFor(report.source_id);
+  panel.append(
+    link(source.label, source.url),
+    facts([
+      ["Entries", String(report.entries.length)],
+      ["Coverage", report.coverage],
+      ["Report vintage", vintage(report)],
+      ["File updated", time(report.source_updated_at)],
+      ["Collected", time(report.retrieved_at)],
+    ]),
+  );
+  if (!report.reported_at && !report.reported_date)
+    panel.append(
+      node(
+        "p",
+        "Report date and time are not supplied. Current game availability cannot be confirmed from this file.",
+      ),
+    );
+  const warnings = [];
+  if (result.rosterStale)
+    warnings.push("Roster context is old; team membership may have changed.");
+  if (result.scheduleStale)
+    warnings.push(
+      "Schedule context is old; the opponent or kickoff may have changed.",
+    );
+  if (result.stale || result.sourceFileStale || result.retrievalStale)
+    warnings.push(
+      "Report, source file or collection is old. Newer information may be missing.",
+    );
+  if (result.sourceFileUnknown)
+    warnings.push("Source-file update time is unknown.");
+  if (result.started)
+    warnings.push(
+      "This game has started; this is not a preserved pre-game recommendation.",
+    );
+  if (result.reportedAfterKickoff)
+    warnings.push("Report issued at or after kickoff.");
+  for (const warning of warnings) panel.append(node("p", warning));
+  panel.append(
     node(
       "p",
-      (entry.injury || "Injury not supplied") +
-        " · Practice: " +
-        entry.practice_status,
-      "injury-detail",
+      "Every available matching row is included. Missing or partial coverage does not establish a healthy team.",
+      "small",
     ),
   );
-  row.append(info);
-  const gameLabel =
-    entry.game_status === "Not listed"
-      ? "No game designation"
-      : entry.game_status === "Unknown"
-        ? "Game status unknown"
-        : entry.game_status;
-  const status = node(
-    "span",
-    gameLabel,
-    "status" +
-      (entry.game_status === "Out"
-        ? " absent"
-        : ["Not listed", "Unknown"].includes(entry.game_status)
-          ? " unknown"
-          : ""),
+  return panel;
+}
+function entryDetails(entry, result) {
+  const panel = node("div");
+  panel.append(node("h2", entry.name + " · " + entry.position));
+  panel.append(
+    facts([
+      ["Injury", entry.injury],
+      ["Game", entry.game_status],
+      ["Practice", entry.practice_status],
+    ]),
   );
-  status.title = "Reported game designation";
-  row.append(status);
-  item.append(row);
-  const context = node("details", undefined, "injury-context");
-  context.dataset.entryId = entry.id;
-  context.append(
-    node(
-      "summary",
-      entry.relevance ? "Possible role relevance" : "Status context",
-    ),
-  );
+  if (entry.availability) panel.append(node("p", entry.availability));
   if (entry.relevance)
-    context.append(
+    panel.append(
       node(
         "p",
         entry.relevance +
-          ". A broad positional possibility; individual assignment and fantasy impact are not established.",
+          ": a broad positional possibility. Individual assignments, replacement quality and fantasy effects are not established.",
       ),
     );
-  if (entry.availability) context.append(node("p", entry.availability));
   if (entry.status_source !== "official")
-    context.append(
+    panel.append(
+      node("p", "Official designations are not established by this source."),
+    );
+  else if (
+    entry.practice_status === "Full" ||
+    entry.game_status === "Not listed"
+  )
+    panel.append(
       node(
         "p",
-        "Official game and practice designations are not established by this source.",
+        "Full practice or no game designation does not guarantee participation.",
+        "small",
       ),
     );
-  else
-    context.append(
-      node(
-        "p",
-        "Game and practice designations as supplied by the report source. Full practice or no game designation is not a guarantee of participation.",
-      ),
-    );
-  if (entry.roster_status !== "active" && entry.roster_status !== "unknown")
-    context.append(
-      node(
-        "p",
-        "Roster status: " + entry.roster_status.replaceAll("-", " ") + ".",
-      ),
-    );
-  if (entry.note) context.append(node("p", entry.note));
-  item.append(context);
-  return item;
+  if (entry.note) panel.append(node("p", entry.note, "small"));
+  const source = sourceFor(result.report.source_id),
+    block = node("div", undefined, "source-block");
+  block.append(
+    link(source.label, source.url),
+    facts([
+      ["Report vintage", vintage(result.report)],
+      ["File updated", time(result.report.source_updated_at)],
+      ["Collected", time(result.report.retrieved_at)],
+    ]),
+  );
+  panel.append(block);
+  return panel;
 }
-function renderCards() {
-  const cards = $("cards");
-  const open = new Set(
-    [...cards.querySelectorAll("details[open]")].map(
-      (el) => el.closest("article").dataset.playerId + "/" + el.dataset.entryId,
+function renderEntry(entry, result) {
+  const item = node("li", undefined, "injury"),
+    row = button("", null, "injury-row");
+  row.dataset.focusKey = "injury:" + entry.id;
+  row.setAttribute(
+    "aria-label",
+    entry.name +
+      ", " +
+      entry.position +
+      ". " +
+      entry.injury +
+      ". Game: " +
+      entry.game_status +
+      ". Practice: " +
+      entry.practice_status +
+      ". Details.",
+  );
+  const person = node("span", undefined, "injury-person");
+  person.append(
+    node("span", entry.name, "injury-name"),
+    node("span", entry.position, "role"),
+  );
+  const badges = node("span", undefined, "injury-badges");
+  badges.setAttribute("aria-hidden", "true");
+  const game = {
+    Out: "OUT",
+    Questionable: "Q",
+    Doubtful: "D",
+    "Not listed": "—",
+    Unknown: "?",
+  }[entry.game_status];
+  const practice = {
+    "Did not practice": "DNP",
+    Limited: "LP",
+    Full: "FP",
+    "Not listed": "—",
+    Unknown: "?",
+  }[entry.practice_status];
+  badges.append(
+    node(
+      "span",
+      game,
+      "status" +
+        (entry.game_status === "Out"
+          ? " absent"
+          : ["Unknown", "Not listed"].includes(entry.game_status)
+            ? " unknown"
+            : ""),
+    ),
+    node(
+      "span",
+      practice,
+      "status practice" +
+        (entry.practice_status === "Limited"
+          ? " limited"
+          : entry.practice_status === "Did not practice"
+            ? " dnp"
+            : ""),
     ),
   );
-  const focused = document.activeElement;
-  const focusedPlayer = focused.closest("article")?.dataset.playerId;
-  const focusedEntry = focused.closest("details")?.dataset.entryId;
-  const focusedRemove = focused.classList.contains("remove");
+  row.append(person, node("span", entry.injury, "injury-detail"), badges);
+  attachPopover(row, () => entryDetails(entry, result), {
+    label: entry.name + " injury details",
+  });
+  item.append(row);
+  return item;
+}
+function emptySlot() {
+  const slot = node("div", undefined, "empty-slot"),
+    add = button("+", openSearch, "empty-add");
+  add.setAttribute("aria-label", "Search for a player");
+  slot.append(add);
+  return slot;
+}
+function renderCards() {
+  const cards = $("cards"),
+    focused = document.activeElement;
+  const focusPlayer = focused.closest("article")?.dataset.playerId,
+    focusKey = focused.dataset.focusKey,
+    keepPopoverClosed = focused.getAttribute("aria-expanded") === "false";
+  const scrolls = new Map(
+    [...cards.querySelectorAll("article")].map((card) => [
+      card.dataset.playerId,
+      card.querySelector(".injury-list")?.scrollTop || 0,
+    ]),
+  );
+  dismissPopover();
   cards.replaceChildren();
+  cards.style.setProperty("--tile-count", Math.max(2, selected.length));
   $("selection-count").textContent =
-    selected.length + " / " + MAX_SELECTIONS + " players";
-  if (!selected.length) {
-    const empty = node("div", undefined, "empty");
-    const mark = node("span", "↗", "empty-mark");
-    mark.setAttribute("aria-hidden", "true");
-    empty.append(
-      mark,
-      node("h3", "Start with a player"),
-      node(
-        "p",
-        "The matchup and full available opponent report will appear here.",
-      ),
-    );
-    cards.append(empty);
-    return;
-  }
+    selected.length + " of " + MAX_SELECTIONS + " players selected";
   for (const id of selected) {
     const player = feed.players.find((value) => value.id === id);
-    const card = node("article", undefined, "player-card");
+    const name = player?.name || "Player unavailable",
+      card = node("article", undefined, "player-card");
     card.dataset.playerId = id;
-    const heading = node("div", undefined, "card-heading");
-    const identity = node("div", undefined, "identity");
-    const name = player?.name || "Player no longer in current roster";
-    identity.append(node("h3", name));
-    if (player)
-      identity.append(
-        node(
-          "p",
-          player.team +
-            " · " +
-            player.position +
-            (player.roster_status === "active"
-              ? ""
-              : " · " + player.roster_status.replaceAll("-", " ")),
-          "position",
-        ),
-      );
-    heading.append(identity);
-    const matchup = node("div", undefined, "matchup-area");
+    card.setAttribute("aria-label", name);
     const remove = button("×", () => removePlayer(id, name), "remove");
+    remove.dataset.focusKey = "remove";
     remove.setAttribute("aria-label", "Remove " + name);
-    const evidence = node("div", undefined, "evidence");
-    if (player) {
-      const result = comparePlayer(feed, player, weekKey);
-      const opponent = node("div");
-      opponent.append(
-        node(
-          "p",
-          result.opponent
-            ? "vs " + result.opponent
-            : result.state === "bye"
-              ? "Bye week"
-              : "Opponent unknown",
-          "matchup",
-        ),
+    const header = node("div", undefined, "player-header");
+    if (player) header.append(teamMark(player.team));
+    header.append(node("h2", name, "player-name"));
+    if (player)
+      header.append(
+        node("p", player.team + " · " + player.position, "player-team"),
       );
-      if (result.game) {
-        const state = result.game.status;
-        let kickoff = result.game.kickoff
-          ? time(result.game.kickoff)
-          : "Kickoff to be announced";
-        if (["postponed", "canceled", "tbd"].includes(state))
-          kickoff =
-            state.charAt(0).toUpperCase() + state.slice(1) + " · " + kickoff;
-        else if (state === "final") kickoff = "Final · " + kickoff;
-        else if (result.started) kickoff = "Game has started · " + kickoff;
-        opponent.append(node("p", kickoff, "kickoff"));
-      }
-      matchup.append(opponent);
-      if (result.rosterStale)
-        evidence.append(
+    card.append(remove, header);
+    if (player) {
+      const result = comparePlayer(feed, player, weekKey),
+        matchup = node("div", undefined, "matchup");
+      if (result.opponent) {
+        matchup.append(node("span", "vs", "versus"), teamMark(result.opponent));
+        const opponent = node("div", undefined, "opponent-info");
+        opponent.append(node("p", result.opponent, "opponent-name"));
+        if (result.game) {
+          let kickoff = result.game.kickoff
+            ? kickoffTime.format(new Date(result.game.kickoff))
+            : "Time TBD";
+          if (["postponed", "canceled"].includes(result.game.status))
+            kickoff = result.game.status;
+          else if (result.game.status === "final") kickoff = "Final";
+          else if (result.started) kickoff = "Started · " + kickoff;
+          opponent.append(node("p", kickoff, "kickoff"));
+        }
+        matchup.append(opponent);
+      } else
+        matchup.append(
           node(
             "p",
-            "Roster file or collection is over 24 hours old; the player’s team may have changed.",
-            "report-warning",
+            result.state === "bye" ? "Bye" : "Matchup unavailable",
+            "opponent-name",
           ),
         );
-      if (result.scheduleStale)
-        evidence.append(
-          node(
-            "p",
-            "Schedule file or collection is over 24 hours old. Kickoff and opponent may have changed.",
-            "report-warning",
-          ),
-        );
-      if (result.report) {
-        const report = result.report;
-        const title = node("div", undefined, "report-heading");
-        title.append(
-          node("strong", result.opponent + " injury report"),
-          node(
-            "span",
-            "All " +
-              report.entries.length +
-              " available entries · " +
-              (report.coverage === "complete"
-                ? "complete source report"
-                : "coverage " + report.coverage),
-            "coverage",
-          ),
-        );
-        evidence.append(title);
-        const meta = node("div", undefined, "meta");
-        const source = sourceFor(report.source_id);
-        meta.append(
-          link(source.label, source.url),
-          node("span", "Report vintage: " + vintage(report)),
-        );
-        if (report.source_updated_at)
-          meta.append(
-            node("span", "File updated: " + time(report.source_updated_at)),
-          );
-        meta.append(node("span", "Collected: " + time(report.retrieved_at)));
-        evidence.append(meta);
-        if (!report.reported_at && !report.reported_date)
-          evidence.append(
-            node(
-              "p",
-              "Report date and time are not supplied. Current game availability cannot be confirmed from this file.",
-              "report-warning",
-            ),
-          );
-        if (result.stale)
-          evidence.append(
-            node(
-              "p",
-              "This report is old. Check the source before relying on its statuses.",
-              "report-warning",
-            ),
-          );
-        if (result.sourceFileStale)
-          evidence.append(
-            node(
-              "p",
-              "The source injury file is over 24 hours old, even if collected recently.",
-              "report-warning",
-            ),
-          );
-        if (result.sourceFileUnknown)
-          evidence.append(
-            node(
-              "p",
-              "Source file update time is not supplied; file freshness is unknown.",
-              "report-warning",
-            ),
-          );
-        if (result.retrievalStale)
-          evidence.append(
-            node(
-              "p",
-              "Collection is over 24 hours old. Newer reports may be missing.",
-              "report-warning",
-            ),
-          );
-        if (result.started)
-          evidence.append(
-            node(
-              "p",
-              "This game has started. This report is context, not a preserved pre-game recommendation.",
-              "report-warning",
-            ),
-          );
-        if (result.reportedAfterKickoff)
-          evidence.append(
-            node(
-              "p",
-              "Report issued at or after kickoff; not pre-game evidence.",
-              "report-warning",
-            ),
-          );
-        evidence.append(node("p", result.message, "report-message"));
+      const info = button(
+        "i",
+        null,
+        "report-info" +
+          (result.stale ||
+          result.sourceFileStale ||
+          result.retrievalStale ||
+          result.rosterStale ||
+          result.scheduleStale
+            ? " stale"
+            : ""),
+      );
+      info.dataset.focusKey = "report-info";
+      info.setAttribute(
+        "aria-label",
+        (result.opponent || "Opponent") + " report source and freshness",
+      );
+      attachPopover(info, () => reportDetails(result), {
+        label: "Report source and freshness",
+      });
+      matchup.append(info);
+      card.append(matchup);
+      if (result.report && result.entries.length) {
         const entries = node("ul", undefined, "injury-list");
         entries.setAttribute(
           "aria-label",
           result.opponent + " complete available injury entries",
         );
-        for (const entry of result.entries) entries.append(renderEntry(entry));
-        evidence.append(entries);
-      } else evidence.append(node("p", result.message, "report-message"));
-    } else {
-      evidence.append(
-        node(
-          "p",
-          "This saved identity is absent from the latest roster source. Search again to confirm current team membership.",
-          "report-message",
-        ),
+        for (const entry of result.entries)
+          entries.append(renderEntry(entry, result));
+        card.append(entries);
+      } else
+        card.append(
+          node(
+            "p",
+            result.state === "bye"
+              ? "Bye week"
+              : result.report
+                ? "No entries · coverage unknown"
+                : result.state === "canceled"
+                  ? "Canceled"
+                  : result.state === "no-week"
+                    ? "Week unavailable"
+                    : "Report unavailable",
+            "report-empty",
+          ),
+        );
+    } else
+      card.append(
+        node("p", "Absent from the current roster source.", "report-empty"),
       );
-    }
-    matchup.append(remove);
-    heading.append(matchup);
-    card.append(heading, evidence);
     cards.append(card);
-    for (const detail of card.querySelectorAll("details"))
-      detail.open = open.has(id + "/" + detail.dataset.entryId);
-    if (focusedPlayer === id) {
-      if (focusedRemove) remove.focus({ preventScroll: true });
-      else if (focusedEntry)
-        [...card.querySelectorAll("details")]
-          .find((el) => el.dataset.entryId === focusedEntry)
-          ?.querySelector("summary")
-          .focus({ preventScroll: true });
+    const list = card.querySelector(".injury-list");
+    if (list) list.scrollTop = scrolls.get(id) || 0;
+    if (focusPlayer === id && focusKey) {
+      const target = [...card.querySelectorAll("[data-focus-key]")].find(
+        (el) => el.dataset.focusKey === focusKey,
+      );
+      (target || remove).focus({ preventScroll: true });
     }
   }
+  for (let i = selected.length; i < 2; i++) cards.append(emptySlot());
+  if (keepPopoverClosed) dismissPopover();
 }
 async function loadFeed(mode, background = false) {
   if (loading) return;
@@ -621,8 +704,7 @@ async function loadFeed(mode, background = false) {
     );
     if (!response.ok)
       throw new Error("The shared data file could not be retrieved.");
-    const content = await response.text();
-    const next = parseFeed(content);
+    const next = parseFeed(await response.text());
     if (next.mode !== mode)
       throw new Error("The data file has an unexpected mode.");
     if (mode !== activeMode || !feed) {
@@ -635,17 +717,18 @@ async function loadFeed(mode, background = false) {
     lastError = "";
     $("search").disabled = false;
     $("search").placeholder =
-      mode === "example" ? "Try Kai, BUF or WR" : "Name, team or position";
+      mode === "example" ? "Search example players" : "Search players";
     document.querySelector('label[for="search"]').textContent =
       mode === "example" ? "Find a fictional player" : "Find an NFL player";
     $("search-help").textContent =
       mode === "example"
         ? "Fictional players only. Choose up to six."
         : "Choose up to six. Injured rostered players are included.";
-    renderWeeks();
     renderStatus();
-    renderSources();
-    renderCards();
+    if (!background || !isPopoverOpen()) {
+      renderWeeks();
+      renderCards();
+    }
     if (background && !$("search-results").hidden) renderSearch();
     if (!background) {
       $("search").value = "";
@@ -659,11 +742,30 @@ async function loadFeed(mode, background = false) {
     if (!feed) {
       $("search").disabled = true;
       $("week").disabled = true;
-      renderSources();
     }
   } finally {
     loading = false;
     lastCheck = Date.now();
+  }
+}
+async function loadTeamAssets() {
+  try {
+    const response = await fetch("./team-assets.json", {
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!response.ok) return;
+    const data = await response.json();
+    for (const [team, asset] of Object.entries(data)) {
+      if (
+        /^[A-Z]{2,3}$/.test(team) &&
+        asset &&
+        asset.url === "team-logos/" + team + ".svg"
+      )
+        teamAssets[team] = asset;
+    }
+    if (feed && !isPopoverOpen()) renderCards();
+  } catch {
+    /* Team abbreviations remain usable without images. */
   }
 }
 $("search").addEventListener("input", renderSearch);
@@ -689,12 +791,18 @@ $("search-results").addEventListener("keydown", (event) => {
   if (!["ArrowDown", "ArrowUp"].includes(event.key)) return;
   event.preventDefault();
   const choices = [
-    ...$("search-results").querySelectorAll("button:not(:disabled)"),
-  ];
-  const index = choices.indexOf(document.activeElement);
-  const next = event.key === "ArrowDown" ? index + 1 : index - 1;
+      ...$("search-results").querySelectorAll("button:not(:disabled)"),
+    ],
+    index = choices.indexOf(document.activeElement),
+    next = event.key === "ArrowDown" ? index + 1 : index - 1;
   if (next < 0) $("search").focus();
   else choices[Math.min(next, choices.length - 1)]?.focus();
+});
+$("week").addEventListener("change", () => {
+  weekKey = $("week").value;
+  autoWeek = false;
+  renderCards();
+  announce("Opponent reports updated.");
 });
 document.addEventListener("pointerdown", (event) => {
   if (!event.target.closest(".search-area")) closeSearch();
@@ -702,33 +810,30 @@ document.addEventListener("pointerdown", (event) => {
 document.addEventListener("focusin", (event) => {
   if (!event.target.closest(".search-area")) closeSearch();
 });
-$("week").addEventListener("change", () => {
-  weekKey = $("week").value;
-  autoWeek = false;
-  renderCards();
-  announce("Opponent reports updated for the selected week.");
-});
-document.addEventListener("visibilitychange", () => {
-  if (!document.hidden && activeMode === "live") {
-    renderWeeksIfLoaded();
-    if (Date.now() - lastCheck > 300000) loadFeed("live", true);
-  }
-});
-function renderWeeksIfLoaded() {
-  if (feed) {
+function updateClock() {
+  if (!feed) return;
+  renderStatus();
+  refreshPopover();
+  if (!isPopoverOpen()) {
     renderWeeks();
-    renderStatus();
     renderCards();
   }
 }
-// A visible tab must cross kickoff/week/freshness boundaries without a provider
-// request. Keep open details and their keyboard focus while updating the clock.
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden && activeMode === "live") {
+    updateClock();
+    if (Date.now() - lastCheck > 300000) loadFeed("live", true);
+  }
+});
 setInterval(() => {
   if (document.hidden) return;
-  renderWeeksIfLoaded();
-  // Conditional same-origin refresh checks the shared published artifact only.
-  // It never calls a provider, even with many simultaneous visitors.
+  updateClock();
   if (activeMode === "live" && Date.now() - lastCheck > 300000)
     loadFeed("live", true);
 }, 60000);
-await loadFeed("live");
+attachPopover($("info"), sourceDetails, {
+  id: "source-popover",
+  label: "Sources and information",
+});
+renderCards();
+await Promise.all([loadFeed("live"), loadTeamAssets()]);

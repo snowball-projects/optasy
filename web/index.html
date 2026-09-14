@@ -6,7 +6,7 @@
     <meta name="theme-color" content="#173e39" />
     <meta
       name="description"
-      content="Find an NFL player. See their opponent’s injury report. A snowball project."
+      content="NFL players and their opponents’ injury reports. A snowball project."
     />
     <meta name="referrer" content="no-referrer" />
     <meta
@@ -19,89 +19,62 @@
     <title>optasy · snowball</title>
   </head>
   <body>
-    <a class="skip-link" href="#reports">Skip to injury reports</a>
-    <header class="topbar">
-      <a class="brand" href="./"
-        ><img src="icon.svg" width="34" height="34" alt="" />optasy</a
-      >
-      <a href="https://snowball-projects.github.io/">snowball ↗</a>
-    </header>
-    <main>
-      <section class="intro" aria-labelledby="title">
-        <p class="eyebrow">A little context for your week</p>
-        <h1 id="title">Your players.<br /><span>Their opponents.</span></h1>
-        <p class="lede">Find a player to see the other team’s injury report.</p>
-      </section>
-      <section id="data-status" class="notice" aria-label="Data availability">
-        <p>Loading player and injury coverage…</p>
-      </section>
-      <div class="controls">
+    <a class="skip-link" href="#reports">Skip to player tiles</a>
+    <header class="toolbar" aria-label="Player search">
+      <div class="toolbar-brand">
+        <a class="brand" href="./" aria-label="optasy"
+          ><img src="icon.svg" width="34" height="34" alt="" /><span
+            >optasy</span
+          ></a
+        >
+      </div>
+      <div class="toolbar-controls">
         <div class="search-area">
-          <label for="search">Find an NFL player</label>
+          <label class="sr-only" for="search">Find an NFL player</label>
           <input
             id="search"
             type="search"
-            placeholder="Name, team or position"
+            placeholder="Search players"
             autocomplete="off"
             spellcheck="false"
             aria-describedby="search-help"
             aria-controls="search-results"
             disabled
           />
-          <p id="search-help" class="small">
+          <p id="search-help" class="sr-only">
             Choose up to six players. Injured rostered players are included.
           </p>
           <div id="search-results" class="search-results" hidden></div>
           <p id="search-status" class="sr-only" role="status"></p>
         </div>
-        <div class="week-area">
-          <label for="week">NFL week</label
-          ><select id="week" disabled>
-            <option>Unavailable</option>
-          </select>
-        </div>
+        <label class="sr-only" for="week">NFL week</label>
+        <select id="week" disabled>
+          <option>Week unavailable</option>
+        </select>
       </div>
-      <section id="reports" tabindex="-1" aria-labelledby="reports-title">
-        <div class="section-heading">
-          <h2 id="reports-title">Opponent injuries</h2>
-          <span id="selection-count" class="small">0 / 6 players</span>
-        </div>
-        <p id="message" class="small" role="status"></p>
-        <div id="cards">
-          <div class="empty">
-            <span class="empty-mark" aria-hidden="true">↗</span>
-            <h3>Start with a player</h3>
-            <p>
-              The matchup and full available opponent report will appear here.
-            </p>
-          </div>
-        </div>
-        <p class="limits">
-          An injury can affect a role without creating an advantage. Positional
-          context is a possibility, not an assigned matchup or a measured
-          fantasy effect.
-        </p>
-      </section>
-      <details id="sources" class="sources">
-        <summary>Sources &amp; freshness</summary>
-        <div id="source-details"></div>
-      </details>
-      <noscript
-        ><p class="notice">
-          JavaScript is needed to search players and display reports. Source and
-          operating details are available in the repository.
-        </p></noscript
-      >
+      <div class="toolbar-info">
+        <div id="data-status" class="data-status" hidden></div>
+        <button
+          id="info"
+          class="icon-button info-button"
+          aria-label="Sources and information"
+        >
+          i
+        </button>
+      </div>
+    </header>
+    <main
+      id="reports"
+      class="board"
+      tabindex="-1"
+      aria-label="Selected players and opponent injuries"
+    >
+      <h1 class="sr-only">Player injury reports</h1>
+      <p id="message" class="sr-only" role="status"></p>
+      <p id="selection-count" class="sr-only">0 of 6 players selected</p>
+      <div id="cards" class="tiles"></div>
+      <noscript><p>JavaScript is required to display the reports.</p></noscript>
     </main>
-    <footer>
-      <span>optasy by snowball</span>
-      <nav aria-label="Project links">
-        <a href="https://github.com/snowball-projects/optasy">Source</a
-        ><a href="https://snowball-projects.github.io/operations/#optasy"
-          >Operations</a
-        ><a href="LICENSE">MIT</a>
-      </nav>
-    </footer>
     <script type="module" src="app.mjs"></script>
   </body>
 </html>

@@ -1,14 +1,31 @@
 # Dashboard
 
-Version 0.3.0 · [Open optasy](https://snowball-projects.github.io/optasy/)
+Version 0.4.0 · [Open optasy](https://snowball-projects.github.io/optasy/)
 
 ## Use
 
-Search by player name, team abbreviation or position. Choose up to six players;
-each card shows the scheduled opponent and **all available injury entries** for
-that team/game. Offense, defense and special teams stay together. Remove a
-selection with its × button. Injured, inactive and reserve roster members are
-included independently of game participation.
+Use the compact top toolbar to search by player name, team abbreviation or
+position. It also holds the week selector and an `i` information button. There
+is no sidebar or explanatory hero. Choose up to six players; the board starts
+with two equal vertical spaces and adds narrower equal columns as selections
+grow. Tile contents adapt to their width. On small screens, scroll the board
+horizontally; long injury lists scroll within their tiles.
+
+Each tile shows the player, current team and position, then the scheduled
+opponent and **all available injury entries** for that team/game. Offense,
+defense and special teams stay together. Remove a selection with its × button.
+Injured, inactive and reserve roster members are included independently of game
+participation. Twelve reviewed primary team logos are served locally; other
+teams have typographic abbreviations. Player photos are omitted. See
+[MEDIA.md](MEDIA.md) for asset provenance and limitations.
+
+Injury rows keep the name, position, injury and concise game/practice badges
+visible. Hover, keyboard-focus or tap a row to open a popup with the full
+designations, availability explanation, source notes and supported role context.
+The popup overlays the board rather than expanding a row. Information buttons
+hold source links, separate report/file/collection timestamps, refresh limits,
+privacy, licenses, image credits and snowball/Operations links. Compact visible
+states remain for missing coverage, byes, changed game status and data failures.
 
 The week defaults from the current schedule window, with an optional week
 selector. A confirmed bye differs from a missing schedule. Kickoffs display
@@ -30,7 +47,7 @@ players keeps the fictional warning. It does not replace saved NFL selections.
 
 Game designation and practice participation are separate. Full practice is not
 a guarantee of playing; a blank source game designation is not “healthy.”
-Expandable role context describes broad football possibilities, not individual
+Popup role context describes broad football possibilities, not individual
 coverage, replacement quality, proven fantasy effects or a start/sit decision.
 
 All matching source rows are displayed, including rows without modeled
@@ -41,9 +58,9 @@ never a fabricated empty report.
 
 Report publication time, source file modification and optasy collection time
 are separate fields. The current nflverse injury CSV supplies **no report date
-or time**. The interface explicitly leaves that vintage unknown, even when the
-file was freshly updated or retrieved. An undated Out row says “Reported Out;
-current availability needs confirmation.”
+or time**. Information and injury popups explicitly leave that vintage unknown,
+even when the file was freshly updated or retrieved. An undated Out designation
+retains the need to confirm current availability in its popup details.
 
 The UI flags a source file or collection older than 24 hours. If a future source
 provides exact report timestamps, report age over 48 hours is flagged; date-only
@@ -136,8 +153,10 @@ npm run build:live
 
 `build:live` requires validated live data whose source IDs, asset URLs and license
 URLs match the reviewed collector definitions. Both build paths copy a fixed
-allowlist from `web/`, LICENSE and NOTICE to ignored `dist/`. They never package
-private research inputs, league configuration or arbitrary local files.
+allowlist from `web/`, LICENSE and NOTICE to ignored `dist/`. This includes the
+media manifest and only its reviewed local SVG paths; the build checks their
+provenance fields and SHA-256 digests. They never package private research
+inputs, league configuration or arbitrary local files.
 
 [The existing workflow](../.github/workflows/tests.yml) checks Node and Python
 on source changes, then collects/validates data and publishes main using GitHub
@@ -172,5 +191,7 @@ Python research suite remains credential-free.
 Before claiming delivery, also check desktop, narrow mobile and keyboard
 search/add/remove flows; persistent selections; missing reports; labelled
 fictional fallback after a failed return; source links; live workflow completion;
-and the deployed version/data counts. Do not equate a local build with a live
-deployment.
+and the deployed version/data counts. Check two through six columns, narrow
+board scrolling, every injury row's keyboard/touch details, popup dismissal and
+focus handling, and logo/fallback rendering. Do not equate a local build with a
+live deployment.
