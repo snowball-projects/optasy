@@ -6,15 +6,17 @@ supersedes earlier dashboard and fantasy-product proposals.
 ## The product
 
 A search box finds any player in the current NFL roster source. Users select a
-handful; each player appears with that week's opponent and the opponent's full
-available injury report. Players can be removed. The current regular-season
+handful; each player appears with that week's opponent and the opponent's available
+defensive roster and defensive injuries. Players can be removed. The current regular-season
 week is selected automatically when covered by the schedule.
 
 Injured current roster members must not disappear because they are not
 game-active. Stable source identities and the latest available team membership
 drive joins. Transfers appear after the source refreshes; do not claim an
-instant transaction feed. Reports retain offensive, defensive and special-teams
-entries. Counts describe rows, never an advantage score.
+instant transaction feed. The latest founder correction limits opponent tiles to defensive players,
+including defenders without reported injuries. Offense and special teams are
+excluded. Collection still preserves the source reports; display filtering is
+explicit. Counts describe rows, never an advantage score.
 
 There are no league settings, roster construction, roster imports, league
 accounts, ESPN Fantasy connections or multi-league management. These were
@@ -23,7 +25,7 @@ draft, waiver, trade, general ranking or start/sit engine.
 
 ## Implemented behavior
 
-Version 0.4.0 is a static search-and-report dashboard using the approved
+Version 0.5.0 is a static search-and-report dashboard using the approved
 nflverse-data release files. It supports six selected players, automatic
 opponents, explicit byes, source-relative completeness, missing-report states,
 unknown kickoff, started games and source/collection age warnings. Selections
@@ -36,10 +38,14 @@ screen-reader guidance. The rest of the viewport belongs to one board of equal
 vertical player tiles: at least two spaces, narrowing as selections grow to six.
 Tile contents adapt to width; narrow screens scroll horizontally instead of
 making the data unreadable. Each tile shows player name, current team, position,
-team mark, opponent and the opponent's complete available report.
+team mark, opponent and the opponent's available defensive roster with matching injury data.
 
-Report rows keep names, positions, injuries and separate compact game/practice
-designations visible. Hovering, focusing or tapping a row opens a popup with
+The board includes every current opponent defensive roster member, including reserve and
+practice-squad members, plus unmatched defensive injury entries. Rows show the name,
+position, injury when present and a concise status label with a matching border.
+Current depth rank 1 at a defensive chart position is labeled first string, not a confirmed game starter.
+Reported injury designations override depth colors. Reserve, practice and
+unknown statuses remain distinct; the color legend is behind information. Hovering, focusing or tapping a row opens a popup with
 full statuses, source notes, availability limits and plausible defensive-role
 relevance where supported. Details do not expand the page. No direct individual
 coverage assignment, replacement quality, numerical boost or demonstrated
@@ -50,9 +56,9 @@ and licensing live behind information buttons. Missing data, byes, started
 games, fictional mode and failures retain concise visible states. Reducing copy
 does not remove these distinctions or silently hide missing coverage.
 
-Twelve individually reviewed public-domain primary team logos are hosted
-locally, with ordinary team abbreviations for the other teams. These fallback
-identifiers are not presented as logos. Portraits are omitted until a practical
+All 32 team logos are hosted locally: twelve public-domain SVGs and twenty
+small copyrighted thumbnails for editorial team identification. Image failure
+uses ordinary team abbreviations. Portraits are omitted until a practical
 licensed source is established. [MEDIA.md](MEDIA.md) owns asset provenance and
 the limits of the selected public-domain determinations.
 
@@ -60,7 +66,7 @@ The source review found current 2026 injuries despite older documentation
 claiming the feed ended after 2024. The current CSV omits report publication
 dates: information details say so. File update and collection times do not
 replace report vintage. Source coverage is partial until independently
-established; every available matching row is displayed. A missing team/week
+established; every available matching defensive row is displayed. A missing team/week
 never becomes an assertion that nobody is injured.
 
 ## Operating boundary

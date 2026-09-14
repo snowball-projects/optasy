@@ -1,7 +1,41 @@
-import { TEAMS, POSITIONS, validateFeed, safeUrl } from "./feed.mjs";
+import { TEAMS, POSITIONS, validateFeed, safeUrl } from "./feed.mjs?v=0.5.0";
 
 export { TEAMS, POSITIONS, validateFeed, safeUrl };
 export const MAX_SELECTIONS = 6;
+export const DEFENSIVE_POSITIONS = new Set([
+  "DE",
+  "EDGE",
+  "DT",
+  "NT",
+  "DI",
+  "DL",
+  "LB",
+  "MLB",
+  "ILB",
+  "OLB",
+  "CB",
+  "S",
+  "FS",
+  "SS",
+  "DB",
+]);
+const DEFENSIVE_DEPTH_POSITIONS = new Set([
+  ...DEFENSIVE_POSITIONS,
+  "LDE",
+  "RDE",
+  "LDT",
+  "RDT",
+  "WLB",
+  "SLB",
+  "LOLB",
+  "ROLB",
+  "LILB",
+  "RILB",
+  "LCB",
+  "RCB",
+  "NB",
+  "NCB",
+]);
 export const REPORT_MAX_AGE_HOURS = 48;
 export const FEED_MAX_AGE_HOURS = 24;
 
@@ -268,4 +302,161 @@ export function comparePlayer(feed, player, weekKey, now = Date.now()) {
     message:
       "All available opponent entries are shown. Role context is a possibility, not an individual assignment or demonstrated fantasy effect.",
   };
+}
+
+export const STATUS_LEGEND = [
+  ["starter", "1st", "First string on the current depth chart"],
+  ["active", "ACT", "Active roster; starting role unconfirmed"],
+  ["questionable", "Q", "Questionable"],
+  ["doubtful", "D", "Doubtful"],
+  ["out", "OUT", "Out"],
+  ["limited", "LP", "Limited practice"],
+  ["dnp", "DNP", "Did not practice"],
+  ["reserve", "RES", "Reserve, inactive or suspended"],
+  ["squad", "PS", "Practice squad"],
+  ["unknown", "?", "Availability or roster context unknown"],
+];
+const STATUS = Object.fromEntries(
+  STATUS_LEGEND.map(([key, short, label]) => [key, { key, short, label }]),
+);
+const POSITION_ORDER = [
+  "QB",
+  "RB",
+  "FB",
+  "WR",
+  "TE",
+  "T",
+  "OT",
+  "G",
+  "OG",
+  "C",
+  "OL",
+  "DE",
+  "EDGE",
+  "DT",
+  "NT",
+  "DI",
+  "DL",
+  "LB",
+  "MLB",
+  "ILB",
+  "OLB",
+  "CB",
+  "S",
+  "FS",
+  "SS",
+  "DB",
+  "K",
+  "P",
+  "LS",
+  "ATH",
+  "UNK",
+];
+
+export function opponentRoster(feed, comparison, weekKey, now = Date.now()) {
+  if (!comparison.opponent) return [];
+  const injuries = new Map(
+    comparison.entries.map((entry) => [entry.id, entry]),
+  );
+  const members = new Map(
+    feed.players
+      .filter((player) => player.team === comparison.opponent)
+      .map((player) => [player.id, player]),
+  );
+  const rosterIds = new Set(members.keys());
+  // Keep report-only identities instead of dropping rows or guessing name joins.
+  for (const entry of injuries.values())
+    if (!members.has(entry.id))
+      members.set(entry.id, { ...entry, roster_status: "unknown" });
+  const depthFreshness = feed.depth
+    ? vintage(feed.depth, now, FEED_MAX_AGE_HOURS)
+    : null;
+  const useDepth =
+    feed.depth &&
+    currentWeek(feed, now)?.key === weekKey &&
+    !comparison.rosterStale &&
+    !depthFreshness.retrievalStale &&
+    !depthFreshness.sourceFileStale &&
+    !depthFreshness.sourceFileUnknown;
+  return [...members.values()]
+    .filter((member) => DEFENSIVE_POSITIONS.has(member.position))
+    .map((member) => {
+      const injury = injuries.get(member.id) || null;
+      const depth = useDepth
+        ? feed.depth.entries.filter(
+            (entry) =>
+              entry.player_id === member.id &&
+              entry.team === comparison.opponent &&
+              DEFENSIVE_DEPTH_POSITIONS.has(entry.position) &&
+              now >= Date.parse(entry.observed_at) &&
+              now - Date.parse(entry.observed_at) <= 86400000,
+          )
+        : [];
+      const starter =
+        member.roster_status === "active" &&
+        depth.some((entry) => entry.rank === 1);
+      let key;
+      if (
+        injury &&
+        ["Out", "Doubtful", "Questionable"].includes(injury.game_status)
+      )
+        key = injury.game_status.toLowerCase();
+      else if (
+        [
+          "reserve",
+          "injured-reserve",
+          "pup",
+          "nfi",
+          "suspended",
+          "inactive",
+          "exempt",
+        ].includes(member.roster_status)
+      )
+        key = "reserve";
+      else if (member.roster_status === "practice-squad") key = "squad";
+      else if (
+        !comparison.report ||
+        comparison.rosterStale ||
+        comparison.stale ||
+        comparison.sourceFileStale ||
+        comparison.retrievalStale ||
+        injury?.game_status === "Unknown"
+      )
+        key = "unknown";
+      else if (injury?.practice_status === "Did not practice") key = "dnp";
+      else if (injury?.practice_status === "Limited") key = "limited";
+      else if (starter) key = "starter";
+      else key = member.roster_status === "active" ? "active" : "unknown";
+      const status = { ...STATUS[key] };
+      const reserve = {
+        "injured-reserve": "IR",
+        pup: "PUP",
+        nfi: "NFI",
+        suspended: "SUSP",
+        inactive: "INA",
+        exempt: "EX",
+      };
+      if (reserve[member.roster_status] && key === "reserve")
+        status.short = reserve[member.roster_status];
+      return {
+        ...member,
+        injury,
+        depth,
+        starter,
+        status,
+        reportOnly: !rosterIds.has(member.id),
+      };
+    })
+    .sort(
+      (a, b) =>
+        POSITION_ORDER.indexOf(a.position) -
+          POSITION_ORDER.indexOf(b.position) ||
+        Number(b.starter) - Number(a.starter) ||
+        Number(a.roster_status !== "active") -
+          Number(b.roster_status !== "active") ||
+        Math.min(...a.depth.map((entry) => entry.rank), 99) -
+          Math.min(...b.depth.map((entry) => entry.rank), 99) ||
+        a.name.localeCompare(b.name) ||
+        a.id.localeCompare(b.id),
+    );
 }

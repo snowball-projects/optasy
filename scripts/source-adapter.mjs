@@ -47,12 +47,14 @@ function positiveInteger(value, label) {
 /** Small bounded RFC 4180 parser: quoted commas/newlines/escaped quotes, no coercion. */
 export function parseCsv(
   text,
-  { maxBytes = MAX_CSV_BYTES, maxRows = 40000 } = {},
+  { maxBytes = MAX_CSV_BYTES, maxRows = 40000, onRow } = {},
 ) {
   if (typeof text !== "string" || Buffer.byteLength(text) > maxBytes)
     fail("CSV exceeds the input limit.");
   text = text.replace(/^\uFEFF/, "");
   const records = [];
+  let header,
+    count = 0;
   let row = [],
     cell = "",
     quoted = false,
@@ -64,9 +66,26 @@ export function parseCsv(
   };
   const addRow = () => {
     addCell();
-    if (row.some((value) => value !== "")) records.push(row);
+    if (row.some((value) => value !== "")) {
+      if (!header) {
+        header = row.map((name) => name.trim());
+        if (
+          header.some((name) => !name) ||
+          new Set(header).size !== header.length
+        )
+          fail("CSV headers are empty or duplicated.");
+      } else {
+        if (++count > maxRows) fail("CSV exceeds the row limit.");
+        if (row.length !== header.length)
+          fail(`CSV row ${count + 1} has an unexpected column count.`);
+        const record = Object.fromEntries(
+          header.map((name, i) => [name, row[i]]),
+        );
+        if (onRow) onRow(record);
+        else records.push(record);
+      }
+    }
     row = [];
-    if (records.length > maxRows + 1) fail("CSV exceeds the row limit.");
   };
   for (let i = 0; i < text.length; i++) {
     const c = text[i];
@@ -93,20 +112,8 @@ export function parseCsv(
   }
   if (quoted) fail("Unterminated CSV quote.");
   if (cell || row.length || afterQuote) addRow();
-  const header = records.shift()?.map((name) => name.trim());
-  if (
-    !header ||
-    header.some((name) => !name.trim()) ||
-    new Set(header).size !== header.length
-  )
-    fail("CSV headers are empty or duplicated.");
-  return records.map((record, index) => {
-    if (record.length !== header.length)
-      fail(`CSV row ${index + 2} has an unexpected column count.`);
-    return Object.fromEntries(
-      header.map((name, i) => [name.trim(), record[i]]),
-    );
-  });
+  if (!header) fail("CSV headers are empty or duplicated.");
+  return records;
 }
 
 export function rosterStatus(row) {
@@ -484,10 +491,85 @@ export function normalizeInjuries(rows, season, games, metadata) {
   }));
 }
 
+export function normalizeDepth(rows, metadata) {
+  requiredColumns(
+    rows,
+    ["dt", "team", "gsis_id", "espn_id", "pos_abb", "pos_rank"],
+    "Depth chart",
+  );
+  const latest = new Map();
+  for (const row of rows) {
+    const club = team(row.team),
+      instant = Date.parse(row.dt);
+    if (
+      !/^\d{4}-\d{2}-\d{2}T/.test(row.dt) ||
+      !Number.isFinite(instant) ||
+      instant > Date.parse(metadata.retrieved_at)
+    )
+      fail("Invalid depth-chart observation time.");
+    latest.set(club, Math.max(latest.get(club) || 0, instant));
+  }
+  const entries = new Map();
+  for (const row of rows) {
+    const club = team(row.team);
+    if (Date.parse(row.dt) !== latest.get(club)) continue;
+    const player_id = clean(row.gsis_id)
+      ? `gsis:${clean(row.gsis_id)}`
+      : clean(row.espn_id)
+        ? `espn:${clean(row.espn_id)}`
+        : null;
+    if (!player_id) continue;
+    const rank = positiveInteger(row.pos_rank, "depth rank"),
+      position = clean(row.pos_abb);
+    if (rank > 20 || !position) fail("Invalid depth-chart position or rank.");
+    const key = `${club}:${player_id}:${position}`;
+    const entry = {
+      player_id,
+      team: club,
+      rank,
+      position,
+      observed_at: new Date(row.dt).toISOString(),
+    };
+    if (entries.has(key) && entries.get(key).rank !== rank)
+      fail("Conflicting depth-chart ranks.");
+    entries.set(key, entry);
+  }
+  if (!entries.size) fail("Depth chart contains no identified players.");
+  return {
+    ...metadata,
+    reported_at: null,
+    coverage: "partial",
+    entries: [...entries.values()],
+  };
+}
+
+export function normalizeDepthCsv(csv, metadata) {
+  const latest = new Map();
+  parseCsv(csv, {
+    maxBytes: 160 * 1024 * 1024,
+    maxRows: 2000000,
+    onRow(row) {
+      const club = team(row.team),
+        instant = Date.parse(row.dt);
+      if (!Number.isFinite(instant))
+        fail("Invalid depth-chart observation time.");
+      const previous = latest.get(club);
+      if (!previous || instant > previous.instant)
+        latest.set(club, { instant, rows: [row] });
+      else if (instant === previous.instant) previous.rows.push(row);
+    },
+  });
+  return normalizeDepth(
+    [...latest.values()].flatMap((value) => value.rows),
+    metadata,
+  );
+}
+
 export function normalizeSources({
   rosterCsv,
   scheduleCsv,
   injuryCsv,
+  depthCsv,
   season,
   metadata,
   sources,
@@ -517,6 +599,7 @@ export function normalizeSources({
       reported_at: null,
       coverage: schedule.coverage,
     },
+    ...(depthCsv ? { depth: normalizeDepthCsv(depthCsv, metadata.depth) } : {}),
     weeks: schedule.weeks,
     players,
     games: schedule.games,

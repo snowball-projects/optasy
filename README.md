@@ -10,9 +10,10 @@ Search the current roster source by name, team or position and select up to six
 players. A compact toolbar holds search, the week selector and an information
 button. Below it, one board starts with two equal vertical spaces and divides
 into narrower tiles as players are added. Small screens scroll the board
-horizontally. Each tile resolves the week's opponent and displays **every
-available entry** in that team's report, including offense and special teams.
-Hover, focus or tap an injury for its details. Remove a player with its × button.
+horizontally. Each tile resolves the week's opponent and displays the opponent's **entire available defensive roster**, merging injury entries by
+stable identity and retaining report-only players. Offense and special teams
+are excluded from opponent tiles. Each player has a status-colored border and a short text label.
+Hover, focus or tap a player for roster, depth and injury details. Remove a player with its × button.
 Injured and reserve roster members remain searchable. Selections stay in the
 browser; there are no accounts or league connections.
 
@@ -22,21 +23,20 @@ games and old collections have distinct states. Broad defensive-role context
 is available within report entries. Injury counts do not measure advantage;
 optasy supplies no point boosts, rankings or start/sit verdicts.
 
-Twelve individually reviewed team logos are served locally, with typographic
-team abbreviations elsewhere. Player photos are omitted pending a practical
+All 32 team logos are served locally with recorded provenance and use bases. Player photos are omitted pending a practical
 licensed source. Source details, timestamps, privacy and licensing sit behind
 the information buttons; the board keeps only compact operational exceptions.
 
 ## Current data and honest limits
 
-The dashboard uses roster, schedule and injury CSV releases from **nflverse-data**
+The dashboard uses roster, schedule, injury and depth-chart releases from **nflverse-data**
 under its explicit **CC BY 4.0 data license**. The integration preserves all
 matching injury rows and credits the source; independent completeness against
 original team reports is not established. Source report dates are currently
 absent. Information popups distinguish that unknown vintage from file
 modification and optasy collection times.
 
-A shared GitHub Actions run checks the three sources hourly at minute 23.
+A shared GitHub Actions run checks the four sources hourly at minute 23.
 Upstream injury and roster files normally update daily, not live. Schedules
 update more often. Runs can be delayed, fail or become dormant; a failed
 collection leaves the previous site visible with ageing timestamps. Data gaps
@@ -95,13 +95,13 @@ start/sit engine are outside product scope.
 
 The Python implementation and frozen evidence remain available for research:
 
-| Source | Purpose |
-| --- | --- |
-| [injury_snapshot.py](scripts/injury_snapshot.py) | Append-only, verified point-in-time inputs |
-| [injury_signal.py](scripts/injury_signal.py) | Experimental defender and unit availability |
-| [calibrate_defender_availability.py](scripts/calibrate_defender_availability.py) | Historical calibration and evaluation |
-| [export_espn_history.py](scripts/export_espn_history.py) | Historical private league exports |
-| [draft_board.py](scripts/draft_board.py) | Historical draft experiments |
+| Source                                                                           | Purpose                                     |
+| -------------------------------------------------------------------------------- | ------------------------------------------- |
+| [injury_snapshot.py](scripts/injury_snapshot.py)                                 | Append-only, verified point-in-time inputs  |
+| [injury_signal.py](scripts/injury_signal.py)                                     | Experimental defender and unit availability |
+| [calibrate_defender_availability.py](scripts/calibrate_defender_availability.py) | Historical calibration and evaluation       |
+| [export_espn_history.py](scripts/export_espn_history.py)                         | Historical private league exports           |
+| [draft_board.py](scripts/draft_board.py)                                         | Historical draft experiments                |
 
 These utilities are not part of the browser flow or active roadmap. Local
 credentials, league configuration, private history and generated artifacts

@@ -445,7 +445,7 @@ input::placeholder {
   min-width: 0;
 }
 .injury-name {
-  font-size: clamp(11px, 3.4cqi, 14px);
+  font-size: clamp(12px, 3.4cqi, 14px);
   font-weight: 570;
   overflow-wrap: anywhere;
   line-height: 1.3;
@@ -726,4 +726,102 @@ input::placeholder {
   * {
     scroll-behavior: auto !important;
   }
+}
+
+/* Availability stays legible through both colored borders and status text. */
+.state-starter {
+  --status-color: #45815a;
+  --status-fill: #eff7ef;
+}
+.state-active {
+  --status-color: #65869c;
+  --status-fill: #f1f6f9;
+}
+.state-questionable {
+  --status-color: #bc9228;
+  --status-fill: #fff8e6;
+}
+.state-doubtful {
+  --status-color: #bc6d32;
+  --status-fill: #fff1e7;
+}
+.state-out {
+  --status-color: #b75c56;
+  --status-fill: #fff0ee;
+}
+.state-limited {
+  --status-color: #b8a04a;
+  --status-fill: #faf7e9;
+}
+.state-dnp {
+  --status-color: #ac784f;
+  --status-fill: #faf1e8;
+}
+.state-reserve {
+  --status-color: #8b719d;
+  --status-fill: #f6f0fa;
+}
+.state-squad {
+  --status-color: #929d9c;
+  --status-fill: #f1f5f4;
+}
+.state-unknown {
+  --status-color: #a6aba4;
+  --status-fill: #f5f5f2;
+}
+.injury-list {
+  padding: 4px 8px;
+}
+.injury {
+  border: 0;
+  margin: 4px 0;
+}
+.injury-row {
+  border: 1px solid var(--status-color);
+  border-left-width: 3px;
+  border-radius: 6px;
+  padding: 7px 8px;
+  min-height: 36px;
+  row-gap: 3px;
+}
+.injury-row:hover,
+.injury-row[aria-expanded="true"] {
+  background: var(--status-fill);
+}
+.injury-row .status {
+  background: var(--status-fill);
+  color: #34453e;
+  height: 20px;
+  min-width: 27px;
+  font-size: 9px;
+}
+.injury-badges {
+  gap: 3px;
+}
+.depth-badge {
+  font-size: 9px;
+  color: #527359;
+}
+.status-legend {
+  display: grid;
+  gap: 5px;
+  margin: 14px 0;
+}
+.legend-item {
+  border-left: 3px solid var(--status-color);
+  padding-left: 8px;
+  font-size: 11px;
+}
+@container (max-width: 230px) {
+  .injury-list {
+    padding: 3px 5px;
+  }
+  .injury-row {
+    padding: 6px 5px;
+  }
+}
+.roster-notice {
+  font-size: 11px;
+  color: var(--muted);
+  padding: 8px 10px 2px;
 }

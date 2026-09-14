@@ -6,7 +6,7 @@
     <meta name="theme-color" content="#173e39" />
     <meta
       name="description"
-      content="NFL players and their opponents’ injury reports. A snowball project."
+      content="NFL players, opponent defenses and injury reports. A snowball project."
     />
     <meta name="referrer" content="no-referrer" />
     <meta
@@ -15,7 +15,7 @@
     />
     <link rel="canonical" href="https://snowball-projects.github.io/optasy/" />
     <link rel="icon" type="image/svg+xml" href="icon.svg" />
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="styles.css?v=0.5.0" />
     <title>optasy · snowball</title>
   </head>
   <body>
@@ -67,14 +67,14 @@
       id="reports"
       class="board"
       tabindex="-1"
-      aria-label="Selected players and opponent injuries"
+      aria-label="Selected players and opponent defenses"
     >
-      <h1 class="sr-only">Player injury reports</h1>
+      <h1 class="sr-only">Opponent defenses and injuries</h1>
       <p id="message" class="sr-only" role="status"></p>
       <p id="selection-count" class="sr-only">0 of 6 players selected</p>
       <div id="cards" class="tiles"></div>
       <noscript><p>JavaScript is required to display the reports.</p></noscript>
     </main>
-    <script type="module" src="app.mjs"></script>
+    <script type="module" src="app.mjs?v=0.5.0"></script>
   </body>
 </html>

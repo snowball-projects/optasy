@@ -2,6 +2,7 @@
 // same-origin JSON. No provider payload is saved by this collector.
 import { rename, rm, writeFile } from "node:fs/promises";
 import { pathToFileURL } from "node:url";
+import { gunzipSync } from "node:zlib";
 import { normalizeSources } from "./source-adapter.mjs";
 
 const RELEASE_ROOT =
@@ -24,7 +25,7 @@ export const PUBLICATION_POLICY = Object.freeze({
   verified: true,
   checked_on: "2026-09-13",
   reason:
-    "nflverse-data explicitly releases these datasets under CC BY 4.0. optasy filters the season and current roster, normalizes teams and timestamps, and groups every available injury row by game. Original report dates are not supplied. No endorsement is implied.",
+    "nflverse-data explicitly releases these datasets under CC BY 4.0. optasy filters the season and current roster, normalizes teams and timestamps, groups every available injury row by game, and retains the latest team depth-chart observations. Original report dates are not supplied. No endorsement is implied.",
 });
 
 export function sourceDefinitions(season) {
@@ -48,6 +49,12 @@ export function sourceDefinitions(season) {
       key: "injuries",
       label: "nflverse injury report data",
       url: `${RELEASE_ROOT}/injuries/injuries_${season}.csv`,
+    },
+    {
+      id: "nflverse-depth",
+      key: "depth",
+      label: "nflverse depth charts",
+      url: `${RELEASE_ROOT}/depth_charts/depth_charts_${season}.csv.gz`,
     },
   ].map((source) => ({
     ...source,
@@ -82,7 +89,7 @@ export async function fetchSource(
 ) {
   const seasonPattern = "(?:202[6-9]|20[3-9][0-9]|2100)";
   const sourcePattern = new RegExp(
-    `^https://github\\.com/nflverse/nflverse-data/releases/download/(?:rosters/roster_${seasonPattern}\\.csv|injuries/injuries_${seasonPattern}\\.csv|schedules/games\\.csv)$`,
+    `^https://github\\.com/nflverse/nflverse-data/releases/download/(?:rosters/roster_${seasonPattern}\\.csv|injuries/injuries_${seasonPattern}\\.csv|depth_charts/depth_charts_${seasonPattern}\\.csv\\.gz|schedules/games\\.csv)$`,
   );
   if (!sourcePattern.test(source.url))
     throw new Error("Source URL is outside the fixed dataset allowlist.");
@@ -152,7 +159,11 @@ export async function fetchSource(
     throw new Error("Source asset timestamp is in the future.");
   return {
     csv: new TextDecoder("utf-8", { fatal: true }).decode(
-      Buffer.concat(chunks),
+      source.key === "depth"
+        ? gunzipSync(Buffer.concat(chunks), {
+            maxOutputLength: 160 * 1024 * 1024,
+          })
+        : Buffer.concat(chunks),
     ),
     bytes,
     metadata: {
@@ -175,7 +186,7 @@ export async function collectFeed({
   if (!inspect && !PUBLICATION_POLICY.verified)
     throw new Error(PUBLICATION_POLICY.reason);
   const definitions = sourceDefinitions(season);
-  // Three total source fetches, with no retry storm. The next scheduled run is
+  // Four total source fetches, with no retry storm. The next scheduled run is
   // the retry. No source data or partially assembled feed is written on failure.
   const outcomes = await Promise.allSettled(
     definitions.map((source) => fetchSource(source, { fetchImpl, now })),
@@ -194,6 +205,7 @@ export async function collectFeed({
     rosterCsv: inputs.roster.csv,
     scheduleCsv: inputs.schedule.csv,
     injuryCsv: inputs.injuries.csv,
+    depthCsv: inputs.depth.csv,
     season,
     metadata: Object.fromEntries(
       Object.entries(inputs).map(([key, value]) => [key, value.metadata]),

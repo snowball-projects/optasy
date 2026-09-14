@@ -7,6 +7,7 @@ import {
   normalizeSchedule,
   normalizeInjuries,
   normalizeSources,
+  normalizeDepthCsv,
   easternTimestamp,
 } from "../scripts/source-adapter.mjs";
 import {
@@ -15,6 +16,7 @@ import {
   collectFeed,
   PUBLICATION_POLICY,
 } from "../scripts/refresh-data.mjs";
+import { gzipSync } from "node:zlib";
 import { validateFeed } from "../web/feed.mjs";
 
 const read = async (name) =>
@@ -22,6 +24,7 @@ const read = async (name) =>
 const [rosterCsv, scheduleCsv, injuryCsv] = await Promise.all(
   ["roster", "schedule", "injuries"].map(read),
 );
+const depthCsv = await read("depth");
 const roster = parseCsv(rosterCsv),
   schedule = parseCsv(scheduleCsv),
   injuries = parseCsv(injuryCsv);
@@ -371,10 +374,10 @@ test("source collection fails as a whole on one unavailable feed and never retri
     }),
     /injuries:.*HTTP 503/,
   );
-  assert.equal(calls, 3);
+  assert.equal(calls, 4);
 });
 
-test("inspection requests three fixed sources and returns aggregate source/report vintage separately", async () => {
+test("inspection requests four fixed sources and returns aggregate source/report vintage separately", async () => {
   let calls = 0;
   const { summary } = await collectFeed({
     season: 2026,
@@ -387,12 +390,14 @@ test("inspection requests three fixed sources and returns aggregate source/repor
           ? rosterCsv
           : String(url).includes("injuries")
             ? injuryCsv
-            : scheduleCsv,
+            : String(url).includes("depth_charts")
+              ? gzipSync(depthCsv)
+              : scheduleCsv,
         { "last-modified": "Sat, 12 Sep 2026 11:35:55 GMT" },
       );
     },
   });
-  assert.equal(calls, 3);
+  assert.equal(calls, 4);
   assert.equal(summary.entries, 5);
   assert.equal(summary.reported_at, null);
   assert.equal(summary.source_updated_at.injuries, UPDATED);
@@ -468,4 +473,38 @@ test("missing report IDs preserve named players with stable validator-safe synth
   });
   feed.reports[0].entries.push({ ...first, id: `fixture:${first.id}` });
   assert.doesNotThrow(() => validateFeed(feed, Date.parse(NOW)));
+});
+
+test("depth charts keep the latest team snapshot, join stable IDs and reject conflicting or future rows", () => {
+  const meta = { ...metadata, source_id: "nflverse-depth" };
+  const result = normalizeDepthCsv(depthCsv, meta);
+  assert.equal(result.entries.length, 2);
+  assert.equal(
+    result.entries.find((row) => row.player_id === "gsis:fiction-qb").rank,
+    1,
+  );
+  assert.equal(result.reported_at, null);
+  assert.throws(
+    () =>
+      normalizeDepthCsv(depthCsv.replaceAll("2026-09-12", "2026-09-15"), meta),
+    /observation/,
+  );
+  const conflict =
+    depthCsv +
+    "2026-09-12T11:30:00Z,BUF,Fiction Quarterback,9001,fiction-qb,1,Offense,1,Quarterback,QB,1,2\n";
+  assert.throws(() => normalizeDepthCsv(conflict, meta), /Conflicting/);
+});
+
+test("compressed depth download is bounded and rejects malformed gzip", async () => {
+  const definition = sourceDefinitions(2026).find(
+    (source) => source.key === "depth",
+  );
+  const result = await fetchSource(definition, {
+    now: () => new Date(NOW),
+    fetchImpl: async () => response(gzipSync(depthCsv)),
+  });
+  assert.equal(result.csv, depthCsv);
+  await assert.rejects(
+    fetchSource(definition, { fetchImpl: async () => response("not gzip") }),
+  );
 });

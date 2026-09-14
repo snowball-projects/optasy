@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.5.0 - 2026-09-13
+
+- Show every available opponent defender, including reserves and practice
+  squad, with status-colored borders and text labels. Exclude offense and
+  special teams from the tiles while preserving source report records.
+- Add reviewed daily depth-chart observations for first-string context; injury
+  status overrides depth colors, and missing reports never imply health.
+- Complete all 32 team logos with documented small editorial thumbnails,
+  preserving separate image copyright and source records.
+- Keep full explanations and the color legend in accessible popups; version
+  browser module URLs so cached earlier code cannot break the new feed.
+
 ## 0.4.0 - 2026-09-13
 
 - Replace explanatory page copy with a compact top search/week/information

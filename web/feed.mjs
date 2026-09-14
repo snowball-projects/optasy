@@ -237,6 +237,7 @@ export function validateFeed(input, now = Date.now()) {
     "players",
     "games",
     "reports",
+    "depth",
   ]);
   requireValue(input.schema_version === 2, "Unsupported feed version.");
   choice(input.mode, ["example", "live"], "feed mode");
@@ -281,6 +282,38 @@ export function validateFeed(input, now = Date.now()) {
   for (const field of ["roster", "schedule"]) {
     object(data[field], field, META_KEYS);
     metadata(data[field], field, sourceIds, generatedAt);
+  }
+  if (Object.hasOwn(data, "depth")) {
+    object(data.depth, "Depth chart", [...META_KEYS, "entries"]);
+    metadata(data.depth, "Depth chart", sourceIds, generatedAt);
+    list(data.depth.entries, "Depth entries", 12000);
+    const identities = new Set();
+    for (const entry of data.depth.entries) {
+      object(entry, "Depth entry", [
+        "player_id",
+        "team",
+        "rank",
+        "position",
+        "observed_at",
+      ]);
+      id(entry.player_id, "Depth player ID");
+      entry.team = team(entry.team, "depth team");
+      text(entry.position, "Depth position", 20);
+      requireValue(
+        Number.isInteger(entry.rank) && entry.rank > 0 && entry.rank <= 20,
+        "Invalid depth rank.",
+      );
+      timestamp(entry.observed_at, "Depth observation");
+      requireValue(
+        Date.parse(entry.observed_at) <= Date.parse(data.depth.retrieved_at),
+        "Depth observation is newer than retrieval.",
+      );
+      unique(
+        identities,
+        `${entry.team}:${entry.player_id}:${entry.position}`,
+        "depth entry",
+      );
+    }
   }
   list(data.weeks, "Weeks", 40);
   list(data.players, "Players", 6000);

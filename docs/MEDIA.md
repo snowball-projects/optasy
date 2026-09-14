@@ -5,7 +5,7 @@ review in [DATA_SOURCES.md](DATA_SOURCES.md).
 
 ## Shipped assets
 
-The dashboard includes twelve current primary team logos from Wikimedia Commons.
+Twelve of the dashboard's team logos are public-domain SVGs from Wikimedia Commons.
 Each file's own description page was reviewed for its public-domain basis;
 Commons API metadata also reported `Public domain` and `Copyrighted: False` at
 collection. The decision does not extend to other images on Commons or to the
@@ -37,19 +37,42 @@ solely to identify the teams in the report, without implying sponsorship or
 endorsement. They are not snowball branding and do not inherit the software's
 MIT license. Retain these source links when reusing the asset collection.
 
-The other twenty teams use ordinary typographic team abbreviations. They are
-fallback identifiers, not replacement logos. Do not substitute outdated marks,
-silently pull unreviewed logos from a CDN, or describe the collection as complete.
-The Bears' reviewed wishbone C was omitted because it is not the current primary
-mark. Additional logos require the same individual source review.
+## Complete team identification
+
+The September 13 follow-up explicitly requests proper logos for all teams.
+The remaining twenty teams now use small PNG thumbnails sourced from each
+team's current English Wikipedia file page. These are copyrighted logos, not
+public-domain works or CC BY assets. Their exact file pages, copyright notices,
+download URLs, dimensions and checksums are recorded in `web/team-assets.json`.
+The source pages identify their own uses as non-free; Wikipedia's rationale is
+not a license for optasy and is not presented as one.
+
+optasy's use is limited to editorial team identification in factual roster,
+matchup and injury reporting. The complete symbol is needed for identification,
+but only a small thumbnail is retained and it is displayed at up to 64 CSS
+pixels. It is not a branding asset, merchandise design, downloadable logo
+library or claim of affiliation. This contextual, noncommercial use does not
+replace a high-resolution logo asset or an official service. The creative
+nature and use of the complete marks remain relevant limits. This is a
+use-specific rationale under the [US fair-use factors](https://www.copyright.gov/fair-use/),
+not an affirmative NFL license or a guarantee that all jurisdictions treat the
+use identically. Downstream uses require their own assessment; do not label
+these images MIT, CC BY or unrestricted.
+
+All 32 teams have a current identifying mark. The Chicago asset is its primary
+bear head and the Tennessee asset is the current 2026 logo. Plain team letters
+remain only as a runtime fallback if an image cannot be loaded. Additional or
+replacement media require a source and use review; player portraits remain
+outside this decision.
 
 ## Storage and verification
 
 [web/team-assets.json](../web/team-assets.json) is the explicit public allowlist.
 It records each local path, description and license links, reviewed description
 revision, original download URL, original and shipped SHA-256 digests, review
-date and transformation. Original SVGs were downloaded from `upload.wikimedia.org`
-after their file-page review. They total about 36 KB after sanitization.
+date and transformation. The twelve original SVGs were downloaded from `upload.wikimedia.org`
+after their file-page review. Those SVGs total about 36 KB after sanitization. The other twenty assets are
+unmodified, small PNG thumbnails (about 423 KB total), not copied source SVGs.
 
 The downloaded SVGs were parsed as XML and restricted to static SVG drawing
 elements and attributes. Non-rendering metadata/editor attributes and external
@@ -61,7 +84,7 @@ image API keys, recurring media collection or service charges.
 
 To replace an asset, recheck its exact source file and current team identity,
 download the permitted original, repeat the static SVG checks, update the
-manifest's provenance and hashes, and inspect its rendered appearance before
+manifest's provenance, use basis and hashes, and inspect its rendered appearance before
 publication. Do not expand the build allowlist to arbitrary downloaded files.
 
 ## Player portraits and other sources

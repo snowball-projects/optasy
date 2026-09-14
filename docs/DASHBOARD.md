@@ -1,6 +1,6 @@
 # Dashboard
 
-Version 0.4.0 · [Open optasy](https://snowball-projects.github.io/optasy/)
+Version 0.5.0 · [Open optasy](https://snowball-projects.github.io/optasy/)
 
 ## Use
 
@@ -12,15 +12,17 @@ grow. Tile contents adapt to their width. On small screens, scroll the board
 horizontally; long injury lists scroll within their tiles.
 
 Each tile shows the player, current team and position, then the scheduled
-opponent and **all available injury entries** for that team/game. Offense,
-defense and special teams stay together. Remove a selection with its × button.
+opponent, **every available defensive roster member**, and defensive injury entries
+for that team/game. Offensive and special-teams positions are excluded. Remove a selection with its × button.
 Injured, inactive and reserve roster members are included independently of game
-participation. Twelve reviewed primary team logos are served locally; other
-teams have typographic abbreviations. Player photos are omitted. See
+participation. All 32 team logos are served locally with source and use records. Player photos are omitted. See
 [MEDIA.md](MEDIA.md) for asset provenance and limitations.
 
-Injury rows keep the name, position, injury and concise game/practice badges
-visible. Hover, keyboard-focus or tap a row to open a popup with the full
+Roster rows keep the name, position and a concise status label visible, plus
+injury text when reported. Borders distinguish first string, active roster,
+Questionable, Doubtful, Out, practice limitations, reserves and unknown status.
+The information popup contains the color legend. First string is depth-chart
+context, not a confirmed game starter. Injury status takes priority. Hover, keyboard-focus or tap a row to open a popup with the full
 designations, availability explanation, source notes and supported role context.
 The popup overlays the board rather than expanding a row. Information buttons
 hold source links, separate report/file/collection timestamps, refresh limits,
@@ -50,8 +52,10 @@ a guarantee of playing; a blank source game designation is not “healthy.”
 Popup role context describes broad football possibilities, not individual
 coverage, replacement quality, proven fantasy effects or a start/sit decision.
 
-All matching source rows are displayed, including rows without modeled
-defensive relevance. A row count is only a count. Source coverage remains
+Matching defensive rows are displayed, including defenders without modeled
+positional relevance. Offensive, special-teams and unclassified positions are
+excluded from the tiles by the founder's latest instruction. The collector
+still preserves all source report rows. A row count is only a count. Source coverage remains
 `partial` because independent completeness against original team reports has
 not been established. No record for a team/game produces “coverage unknown,”
 never a fabricated empty report.
@@ -79,8 +83,8 @@ calling a provider.
 [DATA_SOURCES.md](DATA_SOURCES.md) records the permission basis, observed
 coverage, upstream provenance limits and source/free-service schedules.
 
-`scripts/refresh-data.mjs` downloads exactly three approved nflverse-data release
-CSVs, with no key or account. The roster normalizer excludes cut/retired records
+`scripts/refresh-data.mjs` downloads exactly four approved nflverse-data release
+files (three CSVs and one gzip CSV), with no key or account. The roster normalizer excludes cut/retired records
 while retaining current reserve, inactive, practice-squad and exempt membership.
 Ambiguous identities fail instead of guessing teams. `gsis_id` is primary;
 `gsis_it_id` provides a namespaced fallback when necessary.
@@ -99,7 +103,9 @@ HTTP 429 reports Retry-After when present and fails the run. One failed source,
 invalid payload or ambiguous join rejects the whole update. Unrecognized game
 or practice statuses remain unknown with their raw source value in a note.
 Only a validated feed is atomically written to ignored `web/current.json`.
-Provider CSVs are not saved to the repository.
+Provider CSVs are not saved to the repository. Depth history is gzip-decoded
+with a 160 MiB expansion cap and a two-million-row limit; only each team's
+latest snapshot is retained. See DATA_SOURCES.md for observation semantics.
 
 There is no persistent raw-source cache or database. The published Pages
 artifact is the shared cache: one hourly source collection serves every visitor.
@@ -114,21 +120,23 @@ do not increase with visitor count.
 synthetic fixture. The format is for the collector, not manual user maintenance.
 It is separate from the historical Python snapshot schema.
 
-| Field | Meaning |
-| --- | --- |
-| `schema_version`, `mode`, `label`, `generated_at` | Version 2, `live` or `example`, label and assembly timestamp |
-| `sources` | Stable ID, publisher label, HTTPS asset/license URLs and reviewed permission note |
-| `roster`, `schedule` | Source ID, original vintage or null, optional source file update, retrieval and coverage |
-| `weeks` | Stable phase/season/week key, label, time window and explicitly confirmed bye teams |
-| `players` | Stable source ID, name, current team, position and roster status |
-| `games` | Stable game ID, week key, teams, kickoff or null, schedule/game status |
-| `reports` | Exact game/week/team, source metadata and all matching injury `entries` |
-| `entries` | Stable ID, name, position, injury, separate game/practice/roster statuses, status source and optional note |
+| Field                                             | Meaning                                                                                                        |
+| ------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `schema_version`, `mode`, `label`, `generated_at` | Version 2, `live` or `example`, label and assembly timestamp                                                   |
+| `sources`                                         | Stable ID, publisher label, HTTPS asset/license URLs and reviewed permission note                              |
+| `roster`, `schedule`                              | Source ID, original vintage or null, optional source file update, retrieval and coverage                       |
+| `weeks`                                           | Stable phase/season/week key, label, time window and explicitly confirmed bye teams                            |
+| `players`                                         | Stable source ID, name, current team, position and roster status                                               |
+| `games`                                           | Stable game ID, week key, teams, kickoff or null, schedule/game status                                         |
+| `depth` (optional for older/fictional feeds)      | Source metadata and latest team observations: stable player ID, team, position, rank and observation timestamp |
+| `reports`                                         | Exact game/week/team, source metadata and all matching injury `entries`                                        |
+| `entries`                                         | Stable ID, name, position, injury, separate game/practice/roster statuses, status source and optional note     |
 
 Only HTTPS links without embedded credentials are accepted. IDs and enums are
 validated; unknown fields, ambiguous duplicate joins, malformed timestamps,
 future live inputs and unbounded lists fail. Parsing is capped at 5 MB, 6,000
-players, 800 games, 1,600 reports and 250 entries per team report. Provider text
+players, 800 games, 1,600 reports, 250 entries per team report and 12,000 depth
+assignments. Provider text
 is rendered as text, never HTML. No credentials are accepted by the schema.
 
 ## Build, deploy and revive
@@ -154,7 +162,7 @@ npm run build:live
 `build:live` requires validated live data whose source IDs, asset URLs and license
 URLs match the reviewed collector definitions. Both build paths copy a fixed
 allowlist from `web/`, LICENSE and NOTICE to ignored `dist/`. This includes the
-media manifest and only its reviewed local SVG paths; the build checks their
+media manifest and only its reviewed local SVG/PNG paths; the build checks their
 provenance fields and SHA-256 digests. They never package private research
 inputs, league configuration or arbitrary local files.
 
@@ -183,7 +191,7 @@ remain in their canonical locations.
 ## Verification
 
 Offline Node tests cover source-shaped CSV parsing, injured/current identity
-membership, transfers, exact-game joins, all-position report coverage, explicit
+membership, transfers, exact-game joins, all-position source preservation, defense-only display, explicit
 byes, schedule changes and timezone transitions, stale/unknown vintage,
 publication provenance, bounded downloads and failure behavior. The 44-test
 Python research suite remains credential-free.
@@ -195,3 +203,7 @@ and the deployed version/data counts. Check two through six columns, narrow
 board scrolling, every injury row's keyboard/touch details, popup dismissal and
 focus handling, and logo/fallback rendering. Do not equate a local build with a
 live deployment.
+
+Browser module and stylesheet URLs carry the release version. When releasing
+changes, bump the package version and the `v=` URLs in index/app/model together
+so cached earlier modules cannot be combined with a newer feed contract.

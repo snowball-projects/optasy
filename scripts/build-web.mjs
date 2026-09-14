@@ -26,16 +26,23 @@ const files = [
 const teamAssets = JSON.parse(
   await readFile(new URL("web/team-assets.json", root), "utf8"),
 );
+if (
+  Object.keys(teamAssets).length !== TEAMS.length ||
+  TEAMS.some((team) => !teamAssets[team])
+)
+  throw new Error("Every NFL team must have a reviewed identifying logo.");
 for (const [team, asset] of Object.entries(teamAssets)) {
   if (
     !TEAMS.includes(team) ||
-    asset.url !== `team-logos/${team}.svg` ||
+    !["svg", "png"].some(
+      (extension) => asset.url === `team-logos/${team}.${extension}`,
+    ) ||
     !safeUrl(asset.source) ||
     !safeUrl(asset.license_url)
   )
     throw new Error("Invalid team image provenance.");
-  const svg = await readFile(new URL(`web/${asset.url}`, root), "utf8");
-  if (createHash("sha256").update(svg).digest("hex") !== asset.sha256)
+  const bytes = await readFile(new URL(`web/${asset.url}`, root));
+  if (createHash("sha256").update(bytes).digest("hex") !== asset.sha256)
     throw new Error(`Team image changed without provenance review: ${team}`);
   files.push(asset.url);
 }

@@ -1,8 +1,8 @@
 # optasy agent guide
 
 optasy is a snowball project: search current NFL players, select a handful,
-and show each player's weekly opponent and that team's complete available
-injury report. The founder's September 13, 2026 decision is canonical in
+and show each player's weekly opponent and that team's available defensive roster
+and defensive injuries. The founder's September 13, 2026 decision is canonical in
 [docs/PRODUCT.md](docs/PRODUCT.md).
 
 ## Scope and sources
@@ -26,20 +26,28 @@ injury report. The founder's September 13, 2026 decision is canonical in
   details in information popups and operational exceptions visibly concise.
 - Include injured/reserve roster members. Join by stable source identities and
   current team context, not game-active filters or player names.
-- Show every available opponent report row across all positions. Defensive
-  relevance may annotate a row; it must never silently filter the report.
+- Show the complete available current opponent defensive roster, including reserves and practice
+  squad, with status-colored borders and text labels. Merge injuries by stable
+  ID, preserving unmatched defensive report rows. Use reviewed depth-chart evidence for
+  first-string context at defensive chart positions only; never infer starters or health from absence in an
+  injury report. Injury designations override starter colors.
+- Preserve every available source injury row during collection. Opponent tiles
+  show defensive positions only; exclude offense, special teams and unknown
+  positions. This founder correction supersedes the earlier all-position display.
+  Positional relevance may annotate defensive rows but must not filter them.
 - Preserve report vintage separately from source-file update and retrieval
   times. Unknown vintage stays unknown. Missing coverage is not a healthy team.
   Do not fabricate point boosts, individual coverage assignments or injury-count
   advantage scores.
-- For roster, schedule and injury data, use only the three reviewed nflverse-data
+- For roster, schedule, injury and depth-chart data, use only the four reviewed nflverse-data
   release CSVs under their explicit
   CC BY 4.0 data grant. The publisher-license basis and upstream provenance limit
   are documented. Recheck terms and coverage when expanding/replacing sources;
   public access alone is insufficient.
 - Media are a separate reviewed allowlist in `web/team-assets.json` and
-  [docs/MEDIA.md](docs/MEDIA.md): twelve local public-domain team-logo SVGs,
-  with typographic abbreviations elsewhere. Do not extend the data grant to
+  [docs/MEDIA.md](docs/MEDIA.md): twelve public-domain SVGs plus twenty small copyrighted PNG thumbnails
+  used solely for editorial team identification. Keep their distinct use bases;
+  do not describe the complete logo collection as openly licensed. Do not extend the data grant to
   images, hotlink provider media or add unreviewed portraits. Preserve media
   provenance, checksums and trademark distinctions; do not invent player photos.
 - Collect centrally, at zero service cost. No provider calls from visitors,

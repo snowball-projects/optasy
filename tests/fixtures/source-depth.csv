@@ -1,0 +1,4 @@
+dt,team,player_name,espn_id,gsis_id,pos_grp_id,pos_grp,pos_id,pos_name,pos_abb,pos_slot,pos_rank
+2026-09-12T11:30:00Z,BUF,Fiction Quarterback,9001,fiction-qb,1,Offense,1,Quarterback,QB,1,1
+2026-09-11T11:30:00Z,BUF,Fiction Quarterback,9001,fiction-qb,1,Offense,1,Quarterback,QB,1,2
+2026-09-12T11:30:00Z,CAR,Fiction Transfer,9002,fiction-transfer,1,Offense,2,Receiver,WR,2,2

@@ -1,17 +1,20 @@
-import { parseFeed } from "./feed.mjs";
+import { parseFeed } from "./feed.mjs?v=0.5.0";
 import {
   searchPlayers,
+  opponentRoster,
+  STATUS_LEGEND,
+  DEFENSIVE_POSITIONS,
   currentWeek,
   comparePlayer,
   MAX_SELECTIONS,
   safeUrl,
-} from "./model.mjs";
+} from "./model.mjs?v=0.5.0";
 import {
   attachPopover,
   dismissPopover,
   isPopoverOpen,
   refreshPopover,
-} from "./popover.mjs";
+} from "./popover.mjs?v=0.5.0";
 
 const $ = (id) => document.getElementById(id);
 const STORAGE_KEY = "optasy.selected.v2";
@@ -304,7 +307,7 @@ function sourceDetails() {
         "p",
         activeMode === "example"
           ? "Synthetic data for trying the interface. These are not NFL reports."
-          : "nflverse injury and roster files normally update daily. optasy checks hourly; GitHub runs can be delayed. Report timestamps are not supplied by the current injury source.",
+          : "nflverse injury, roster and depth-chart files normally update daily. optasy checks hourly; GitHub runs can be delayed. Report timestamps are not supplied by the current injury source.",
       ),
     );
     panel.append(
@@ -316,6 +319,7 @@ function sourceDetails() {
     for (const [label, meta] of [
       ["Roster", feed.roster],
       ["Schedule", feed.schedule],
+      ...(feed.depth ? [["Depth chart", feed.depth]] : []),
     ]) {
       const block = node("div", undefined, "source-block"),
         source = sourceFor(meta.source_id);
@@ -348,7 +352,7 @@ function sourceDetails() {
         "p",
         activeMode === "example"
           ? "The example is a static fictional fixture and does not update."
-          : "nflverse data are filtered, normalized and joined by optasy. Source-file updates and collection times are not report publication times. Complete available rows are shown; independent completeness and current availability are not established.",
+          : "nflverse data are filtered, normalized and joined by optasy. Source-file updates and collection times are not report publication times. Defensive roster and injury entries are shown; independent completeness and current availability are not established.",
         "small",
       ),
     );
@@ -384,6 +388,19 @@ function sourceDetails() {
   ])
     links.append(link(label, url));
   panel.append(links);
+  const legend = node("div", undefined, "status-legend");
+  for (const [key, short, label] of STATUS_LEGEND)
+    legend.append(
+      node("span", short + " · " + label, "legend-item state-" + key),
+    );
+  panel.append(
+    legend,
+    node(
+      "p",
+      "Injury and reserve designations take priority over depth-chart colors. First string is not a confirmed game starter; active is not a health designation. Roster and depth context describe the current team, not historical game rosters.",
+      "small",
+    ),
+  );
   if (!feed)
     panel.append(
       button("Try fictional example", () => {
@@ -405,7 +422,14 @@ function reportDetails(result) {
   panel.append(
     link(source.label, source.url),
     facts([
-      ["Entries", String(report.entries.length)],
+      [
+        "Defensive injury entries",
+        String(
+          report.entries.filter((entry) =>
+            DEFENSIVE_POSITIONS.has(entry.position),
+          ).length,
+        ),
+      ],
       ["Coverage", report.coverage],
       ["Report vintage", vintage(report)],
       ["File updated", time(report.source_updated_at)],
@@ -442,7 +466,7 @@ function reportDetails(result) {
   panel.append(
     node(
       "p",
-      "Every available matching row is included. Missing or partial coverage does not establish a healthy team.",
+      "Defensive roster members and defensive injury entries are shown. Offense and special teams are excluded. Missing or partial coverage does not establish a healthy defense.",
       "small",
     ),
   );
@@ -496,69 +520,100 @@ function entryDetails(entry, result) {
   panel.append(block);
   return panel;
 }
-function renderEntry(entry, result) {
+function memberDetails(member, result) {
+  const panel = member.injury
+    ? entryDetails(member.injury, result)
+    : node("div");
+  if (!member.injury)
+    panel.append(node("h2", member.name + " · " + member.position));
+  panel.append(facts([["Roster", member.roster_status.replaceAll("-", " ")]]));
+  if (member.depth.length)
+    panel.append(
+      facts([
+        [
+          "Depth chart",
+          member.depth
+            .map((entry) => entry.position + " #" + entry.rank)
+            .join(", "),
+        ],
+        ["Chart observed", time(member.depth[0].observed_at)],
+      ]),
+    );
+  if (member.starter)
+    panel.append(
+      node(
+        "p",
+        "First string on the depth chart; the starting lineup and game participation are not confirmed.",
+        "small",
+      ),
+    );
+  if (!member.injury)
+    panel.append(
+      node(
+        "p",
+        result.report
+          ? "No matching injury entry in the available report. This does not establish health or game availability."
+          : "Injury report unavailable. Game availability is unknown.",
+        "small",
+      ),
+    );
+  if (member.reportOnly)
+    panel.append(
+      node(
+        "p",
+        "Listed in the injury report, but this identity is absent from the current team roster.",
+        "small",
+      ),
+    );
+  const source = sourceFor(feed.roster.source_id);
+  const block = node("div", undefined, "source-block");
+  block.append(
+    link(source.label, source.url),
+    facts([["Roster collected", time(feed.roster.retrieved_at)]]),
+  );
+  if (member.depth.length) {
+    const source = sourceFor(feed.depth.source_id);
+    block.append(link(source.label, source.url));
+  }
+  panel.append(block);
+  return panel;
+}
+function renderMember(member, result) {
   const item = node("li", undefined, "injury"),
-    row = button("", null, "injury-row");
-  row.dataset.focusKey = "injury:" + entry.id;
+    row = button("", null, "injury-row state-" + member.status.key);
+  row.dataset.focusKey = "injury:" + member.id;
   row.setAttribute(
     "aria-label",
-    entry.name +
+    member.name +
       ", " +
-      entry.position +
+      member.position +
       ". " +
-      entry.injury +
-      ". Game: " +
-      entry.game_status +
-      ". Practice: " +
-      entry.practice_status +
+      member.status.label +
+      (member.injury
+        ? ". Injury: " +
+          member.injury.injury +
+          ". Game: " +
+          member.injury.game_status +
+          ". Practice: " +
+          member.injury.practice_status
+        : ". No matching injury entry") +
       ". Details.",
   );
   const person = node("span", undefined, "injury-person");
   person.append(
-    node("span", entry.name, "injury-name"),
-    node("span", entry.position, "role"),
+    node("span", member.name, "injury-name"),
+    node("span", member.position, "role"),
   );
   const badges = node("span", undefined, "injury-badges");
   badges.setAttribute("aria-hidden", "true");
-  const game = {
-    Out: "OUT",
-    Questionable: "Q",
-    Doubtful: "D",
-    "Not listed": "—",
-    Unknown: "?",
-  }[entry.game_status];
-  const practice = {
-    "Did not practice": "DNP",
-    Limited: "LP",
-    Full: "FP",
-    "Not listed": "—",
-    Unknown: "?",
-  }[entry.practice_status];
-  badges.append(
-    node(
-      "span",
-      game,
-      "status" +
-        (entry.game_status === "Out"
-          ? " absent"
-          : ["Unknown", "Not listed"].includes(entry.game_status)
-            ? " unknown"
-            : ""),
-    ),
-    node(
-      "span",
-      practice,
-      "status practice" +
-        (entry.practice_status === "Limited"
-          ? " limited"
-          : entry.practice_status === "Did not practice"
-            ? " dnp"
-            : ""),
-    ),
-  );
-  row.append(person, node("span", entry.injury, "injury-detail"), badges);
-  attachPopover(row, () => entryDetails(entry, result), {
-    label: entry.name + " injury details",
+  badges.append(node("span", member.status.short, "status"));
+  if (member.starter && member.status.key !== "starter")
+    badges.append(node("span", "1st", "depth-badge"));
+  row.append(person, badges);
+  if (member.injury)
+    row.append(node("span", member.injury.injury, "injury-detail"));
+  attachPopover(row, () => memberDetails(member, result), {
+    label: member.name + " roster and injury details",
   });
   item.append(row);
   return item;
@@ -652,14 +707,17 @@ function renderCards() {
       });
       matchup.append(info);
       card.append(matchup);
-      if (result.report && result.entries.length) {
+      const members = opponentRoster(feed, result, weekKey);
+      if (members.length) {
+        if (!result.report)
+          card.append(node("p", "Injury report unavailable", "roster-notice"));
         const entries = node("ul", undefined, "injury-list");
         entries.setAttribute(
           "aria-label",
-          result.opponent + " complete available injury entries",
+          result.opponent + " available defensive roster and injury entries",
         );
-        for (const entry of result.entries)
-          entries.append(renderEntry(entry, result));
+        for (const member of members)
+          entries.append(renderMember(member, result));
         card.append(entries);
       } else
         card.append(
@@ -668,7 +726,7 @@ function renderCards() {
             result.state === "bye"
               ? "Bye week"
               : result.report
-                ? "No entries · coverage unknown"
+                ? "No defensive entries · coverage unknown"
                 : result.state === "canceled"
                   ? "Canceled"
                   : result.state === "no-week"
@@ -751,6 +809,7 @@ async function loadFeed(mode, background = false) {
 async function loadTeamAssets() {
   try {
     const response = await fetch("./team-assets.json", {
+      cache: "no-cache",
       signal: AbortSignal.timeout(10000),
     });
     if (!response.ok) return;
@@ -759,7 +818,9 @@ async function loadTeamAssets() {
       if (
         /^[A-Z]{2,3}$/.test(team) &&
         asset &&
-        asset.url === "team-logos/" + team + ".svg"
+        ["svg", "png"].some(
+          (extension) => asset.url === "team-logos/" + team + "." + extension,
+        )
       )
         teamAssets[team] = asset;
     }
