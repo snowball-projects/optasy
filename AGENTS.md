@@ -18,11 +18,14 @@ and defensive injuries. The founder's September 13, 2026 decision is canonical i
   multi-league management, drafts, waivers, trades, rankings or start/sit engine.
   These are excluded scope, not deferred features.
 - Follow the founder's current layout: compact top toolbar with search, week
-  and information button; no sidebar, hero, visible headings or directions.
+  and information button; no sidebar, hero, page heading or directions.
   Keep accessible labels. One full board has at least two equal vertical spaces,
   narrowing to six player tiles; small screens scroll horizontally. Preserve
-  complete readable reports. Injury details open on hover, focus or tap in
-  popups, not expanding page sections. Keep source/timestamp/privacy/licensing
+  complete readable reports with a 300px minimum tile width. Group first-string
+  defenders above other defenders using verified current depth evidence. Rows
+  have uniform heights: name left, three equal position/injury/status pills in
+  the middle, string right. Details open only on click/tap or Enter/Space, never
+  on hover or focus alone. Use accessible popups, not expanding page sections. Keep source/timestamp/privacy/licensing
   details in information popups and operational exceptions visibly concise.
 - Include injured/reserve roster members. Join by stable source identities and
   current team context, not game-active filters or player names.
@@ -76,7 +79,7 @@ Automated source tests use synthetic source-shaped fixtures, never network.
 For publication, run `npm run refresh` and `npm run build:live`, inspect the
 staged diff, confirm remote/branch/license/data provenance, and verify desktop,
 mobile and keyboard flows, two-to-six tile layouts, horizontal scrolling and
-hover/focus/tap popup behavior plus the final GitHub Pages deployment. Source CI
+click/tap/keyboard popup activation and dismissal plus the final GitHub Pages deployment. Source CI
 runs both suites; hourly data refresh runs the Node suite. Keep artifact
 retention at one day and standard public Ubuntu runners. Do not change
 repository visibility, paid capacity or history.

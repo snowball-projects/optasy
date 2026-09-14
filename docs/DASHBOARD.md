@@ -1,6 +1,6 @@
 # Dashboard
 
-Version 0.5.0 · [Open optasy](https://snowball-projects.github.io/optasy/)
+Version 0.6.0 · [Open optasy](https://snowball-projects.github.io/optasy/)
 
 ## Use
 
@@ -18,13 +18,17 @@ Injured, inactive and reserve roster members are included independently of game
 participation. All 32 team logos are served locally with source and use records. Player photos are omitted. See
 [MEDIA.md](MEDIA.md) for asset provenance and limitations.
 
-Roster rows keep the name, position and a concise status label visible, plus
-injury text when reported. Borders distinguish first string, active roster,
+First-string defenders appear above other defenders. Uniform-height rows keep
+the name on the left, three equal position/injury/status pills in the middle,
+and depth on the right. Injury labels abbreviate long descriptions; the popup
+preserves the full text. A dash means no matching injury entry; a question mark
+means unknown. Tiles retain a 300px minimum width and scroll horizontally. Borders distinguish first string, active roster,
 Questionable, Doubtful, Out, practice limitations, reserves and unknown status.
 The information popup contains the color legend. First string is depth-chart
-context, not a confirmed game starter. Injury status takes priority. Hover, keyboard-focus or tap a row to open a popup with the full
+context, not a confirmed game starter. Injury status takes priority. Click, tap or press Enter/Space on a row to open a popup with the full
 designations, availability explanation, source notes and supported role context.
-The popup overlays the board rather than expanding a row. Information buttons
+Hover and focus alone never open details. Escape, outside click and moving
+focus away dismiss the popup, which overlays the board without expanding a row. Information buttons
 hold source links, separate report/file/collection timestamps, refresh limits,
 privacy, licenses, image credits and snowball/Operations links. Compact visible
 states remain for missing coverage, byes, changed game status and data failures.

@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import {
   opponentRoster,
+  groupDefenders,
+  memberPills,
   comparePlayer,
   DEFENSIVE_POSITIONS,
 } from "../web/model.mjs";
@@ -225,4 +227,61 @@ test("a defender listed first at kick returner is not mislabeled a defensive sta
       .starter,
     true,
   );
+});
+
+test("first-string grouping keeps injured first-string defenders and unknown depth without losing rows", () => {
+  const { feed, week, comparison, member } = setup();
+  comparison.entries.push({
+    ...comparison.entries[0],
+    id: member.id,
+    name: member.name,
+    game_status: "Out",
+  });
+  const members = opponentRoster(feed, comparison, week, now);
+  const before = structuredClone(members);
+  const groups = groupDefenders(members);
+  assert.equal(groups[0].label, "First string");
+  assert.equal(
+    groups[0].members.find((m) => m.id === member.id).status.key,
+    "out",
+  );
+  assert.ok(groups[0].members.every((m) => m.starter));
+  assert.ok(groups[1].members.every((m) => !m.starter));
+  assert.deepEqual(
+    new Set(groups.flatMap((g) => g.members.map((m) => m.id))),
+    new Set(members.map((m) => m.id)),
+  );
+  assert.deepEqual(members, before);
+  delete feed.depth;
+  const unknown = groupDefenders(opponentRoster(feed, comparison, week, now));
+  assert.equal(unknown.length, 1);
+  assert.equal(unknown[0].label, "Defenders · depth unknown");
+  assert.deepEqual(groupDefenders([]), []);
+});
+
+test("compact injury pills preserve missing coverage, multiple descriptions and full source text", () => {
+  const member = { injury: null, depth: [] };
+  assert.deepEqual(memberPills(member, false), { injury: "?", depth: "?" });
+  assert.equal(memberPills(member, true).injury, "—");
+  member.injury = { injury: "Hamstring" };
+  assert.equal(memberPills(member, true).injury, "Ham.");
+  member.injury.injury = "Knee; Shoulder";
+  assert.equal(memberPills(member, true).injury, "Multi");
+  assert.equal(member.injury.injury, "Knee; Shoulder");
+  member.injury.injury = "Unrecognized source description";
+  assert.equal(memberPills(member, true).injury, "Other");
+  for (const [rank, expected] of [
+    [1, "1st"],
+    [2, "2nd"],
+    [3, "3rd"],
+    [4, "4th"],
+    [11, "11th"],
+    [12, "12th"],
+    [13, "13th"],
+  ]) {
+    member.depth = [{ rank }];
+    assert.equal(memberPills(member, true).depth, expected);
+  }
+  member.depth = [{ rank: 2 }, { rank: 1 }];
+  assert.equal(memberPills(member, true).depth, "1st");
 });

@@ -1,4 +1,4 @@
-import { TEAMS, POSITIONS, validateFeed, safeUrl } from "./feed.mjs?v=0.5.0";
+import { TEAMS, POSITIONS, validateFeed, safeUrl } from "./feed.mjs?v=0.6.0";
 
 export { TEAMS, POSITIONS, validateFeed, safeUrl };
 export const MAX_SELECTIONS = 6;
@@ -319,6 +319,86 @@ export const STATUS_LEGEND = [
 const STATUS = Object.fromEntries(
   STATUS_LEGEND.map(([key, short, label]) => [key, { key, short, label }]),
 );
+
+export function groupDefenders(members) {
+  const first = members.filter((member) => member.starter);
+  const rest = members.filter((member) => !member.starter);
+  return [
+    { key: "first", label: "First string", members: first },
+    {
+      key: "other",
+      label: first.length
+        ? "Other defenders"
+        : members.some((member) => member.depth.length)
+          ? "Defenders"
+          : "Defenders · depth unknown",
+      members: rest,
+    },
+  ].filter((group) => group.members.length);
+}
+
+const INJURY_PILLS = {
+  ankle: "Ankle",
+  knee: "Knee",
+  foot: "Foot",
+  toe: "Toe",
+  hamstring: "Ham.",
+  shoulder: "Shldr",
+  groin: "Groin",
+  calf: "Calf",
+  quadricep: "Quad",
+  quadriceps: "Quad",
+  quad: "Quad",
+  achilles: "Achil.",
+  neck: "Neck",
+  back: "Back",
+  hip: "Hip",
+  ribs: "Ribs",
+  rib: "Rib",
+  chest: "Chest",
+  abdomen: "Abd.",
+  abdominal: "Abd.",
+  oblique: "Obliq.",
+  elbow: "Elbow",
+  wrist: "Wrist",
+  hand: "Hand",
+  finger: "Finger",
+  thumb: "Thumb",
+  biceps: "Biceps",
+  triceps: "Tricep",
+  concussion: "Conc.",
+  head: "Head",
+  illness: "Ill",
+  "not specified": "?",
+  "not injury related - resting player": "Rest",
+  "not injury related - personal matter": "Pers.",
+};
+
+export function memberPills(member, hasReport) {
+  let injury = hasReport ? "—" : "?";
+  if (member.injury) {
+    const parts = [
+      ...new Set(
+        member.injury.injury
+          .split(";")
+          .map((part) => part.trim())
+          .filter(Boolean),
+      ),
+    ];
+    injury =
+      parts.length > 1
+        ? "Multi"
+        : INJURY_PILLS[parts[0]?.toLowerCase()] || "Other";
+  }
+  const rank = member.depth.length
+    ? Math.min(...member.depth.map((entry) => entry.rank))
+    : null;
+  const suffix =
+    rank % 100 >= 11 && rank % 100 <= 13
+      ? "th"
+      : { 1: "st", 2: "nd", 3: "rd" }[rank % 10] || "th";
+  return { injury, depth: rank === null ? "?" : rank + suffix };
+}
 const POSITION_ORDER = [
   "QB",
   "RB",

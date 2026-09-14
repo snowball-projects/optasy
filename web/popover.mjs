@@ -94,7 +94,7 @@ export function refreshPopover(event) {
   const scrollTop = panel.scrollTop;
   panel.style.maxWidth = `${Math.max(0, view.width - 24)}px`;
   panel.style.maxHeight = `${Math.max(0, view.height - 24)}px`;
-  // A gap would cross the next dense injury row and open that row instead.
+  // Keep the panel adjacent to its row while clamping it to the viewport.
   const position = popoverPosition(
     rect,
     panel.getBoundingClientRect(),
@@ -122,22 +122,6 @@ function nextControl(trigger) {
     (element) => !active.panel.contains(element),
   );
   return controls[controls.indexOf(trigger) + 1];
-}
-
-function requestClose(record) {
-  clearTimeout(record.closeTimer);
-  record.closeTimer = setTimeout(() => {
-    if (
-      active === record &&
-      !record.pinned &&
-      !record.hovered &&
-      !record.panelHovered &&
-      document.activeElement !== record.trigger &&
-      !record.panel.contains(document.activeElement)
-    ) {
-      dismissPopover();
-    }
-  }, 180);
 }
 
 function onOutsidePointer(event) {
@@ -198,8 +182,7 @@ function onFocusChange(event) {
 }
 
 function openPopover(record) {
-  if (active === record || record.suppressed || !record.trigger.isConnected)
-    return;
+  if (active === record || !record.trigger.isConnected) return;
   dismissPopover();
   const panel = document.createElement("div");
   panel.id = record.id;
@@ -215,20 +198,9 @@ function openPopover(record) {
     typeof record.content === "function" ? record.content() : record.content,
   );
   record.panel = panel;
-  record.pinned = false;
-  record.panelHovered = false;
   active = record;
   document.body.append(panel);
   record.trigger.setAttribute("aria-expanded", "true");
-  panel.addEventListener("pointerenter", () => {
-    record.panelHovered = true;
-    clearTimeout(record.closeTimer);
-  });
-  panel.addEventListener("pointerleave", () => {
-    record.panelHovered = false;
-    requestClose(record);
-  });
-  panel.addEventListener("focusout", () => requestClose(record));
   record.observer = new MutationObserver(() => {
     if (!record.trigger.isConnected) dismissPopover();
   });
@@ -247,9 +219,6 @@ export function dismissPopover() {
   if (!active) return;
   const record = active;
   active = null;
-  record.suppressed = true;
-  record.pinned = false;
-  clearTimeout(record.closeTimer);
   record.observer.disconnect();
   record.trigger.setAttribute("aria-expanded", "false");
   record.panel.remove();
@@ -270,50 +239,20 @@ export function attachPopover(trigger, content, { id, label } = {}) {
     content,
     id: id || `popover-${++nextId}`,
     label: label || trigger.getAttribute("aria-label") || "Details",
-    suppressed: false,
-    hovered: false,
-    panelHovered: false,
-    pinned: false,
   };
   trigger.setAttribute("aria-haspopup", "dialog");
   trigger.setAttribute("aria-controls", record.id);
   trigger.setAttribute("aria-expanded", "false");
-  const handlers = {
-    pointerenter(event) {
-      if (event.pointerType === "touch") return;
-      record.hovered = true;
-      record.suppressed = false;
-      clearTimeout(record.closeTimer);
-      openPopover(record);
-    },
-    pointerleave() {
-      record.hovered = false;
-      requestClose(record);
-    },
-    focus() {
-      openPopover(record);
-    },
-    blur() {
-      record.suppressed = false;
-      requestClose(record);
-    },
-    click() {
-      if (active === record && record.pinned) {
-        dismissPopover();
-      } else {
-        record.suppressed = false;
-        openPopover(record);
-        if (active === record) record.pinned = true;
-      }
-    },
+  // Native buttons emit click for pointer/touch, Enter and Space. Hover and
+  // focus intentionally have no activation handler.
+  const activate = () => {
+    if (active === record) dismissPopover();
+    else openPopover(record);
   };
-  for (const [type, handler] of Object.entries(handlers))
-    trigger.addEventListener(type, handler);
+  trigger.addEventListener("click", activate);
   const cleanup = () => {
     if (active === record) dismissPopover();
-    clearTimeout(record.closeTimer);
-    for (const [type, handler] of Object.entries(handlers))
-      trigger.removeEventListener(type, handler);
+    trigger.removeEventListener("click", activate);
     trigger.removeAttribute("aria-haspopup");
     trigger.removeAttribute("aria-controls");
     trigger.removeAttribute("aria-expanded");

@@ -1,20 +1,22 @@
-import { parseFeed } from "./feed.mjs?v=0.5.0";
+import { parseFeed } from "./feed.mjs?v=0.6.0";
 import {
   searchPlayers,
   opponentRoster,
+  groupDefenders,
+  memberPills,
   STATUS_LEGEND,
   DEFENSIVE_POSITIONS,
   currentWeek,
   comparePlayer,
   MAX_SELECTIONS,
   safeUrl,
-} from "./model.mjs?v=0.5.0";
+} from "./model.mjs?v=0.6.0";
 import {
   attachPopover,
   dismissPopover,
   isPopoverOpen,
   refreshPopover,
-} from "./popover.mjs?v=0.5.0";
+} from "./popover.mjs?v=0.6.0";
 
 const $ = (id) => document.getElementById(id);
 const STORAGE_KEY = "optasy.selected.v2";
@@ -360,7 +362,7 @@ function sourceDetails() {
   panel.append(
     node(
       "p",
-      "Hover, focus or tap an injury for details. Game and practice designations are separate. Role relevance is a possibility, not an individual assignment or a measured fantasy effect.",
+      "Click or tap a player, or press Enter or Space, for details. Game and practice designations are separate. Role relevance is a possibility, not an individual assignment or a measured fantasy effect.",
       "small",
     ),
   );
@@ -397,7 +399,7 @@ function sourceDetails() {
     legend,
     node(
       "p",
-      "Injury and reserve designations take priority over depth-chart colors. First string is not a confirmed game starter; active is not a health designation. Roster and depth context describe the current team, not historical game rosters.",
+      "The equal pills show position, injury and status; depth is at the right. An injury dash means no matching entry, and ? means unknown. Multi means multiple injury descriptions. Injury and reserve designations take priority over depth-chart colors. First string is not a confirmed game starter; active is not a health designation. Roster and depth context describe the current team, not historical game rosters.",
       "small",
     ),
   );
@@ -599,19 +601,26 @@ function renderMember(member, result) {
         : ". No matching injury entry") +
       ". Details.",
   );
-  const person = node("span", undefined, "injury-person");
-  person.append(
-    node("span", member.name, "injury-name"),
-    node("span", member.position, "role"),
+  const { injury, depth } = memberPills(member, Boolean(result.report));
+  const name = node("span", member.name, "injury-name");
+  const pills = node("span", undefined, "member-pills");
+  pills.setAttribute("aria-hidden", "true");
+  for (const [kind, text] of [
+    ["position", member.position],
+    ["injury", injury],
+    ["status", member.status.short],
+  ])
+    pills.append(node("span", text, "member-pill pill-" + kind));
+  const string = node("span", depth, "member-depth");
+  string.setAttribute("aria-hidden", "true");
+  row.append(name, pills, string);
+  row.setAttribute(
+    "aria-label",
+    row.getAttribute("aria-label") +
+      " Defensive depth: " +
+      (depth === "?" ? "unknown" : depth) +
+      ". Activate to open details.",
   );
-  const badges = node("span", undefined, "injury-badges");
-  badges.setAttribute("aria-hidden", "true");
-  badges.append(node("span", member.status.short, "status"));
-  if (member.starter && member.status.key !== "starter")
-    badges.append(node("span", "1st", "depth-badge"));
-  row.append(person, badges);
-  if (member.injury)
-    row.append(node("span", member.injury.injury, "injury-detail"));
   attachPopover(row, () => memberDetails(member, result), {
     label: member.name + " roster and injury details",
   });
@@ -629,8 +638,7 @@ function renderCards() {
   const cards = $("cards"),
     focused = document.activeElement;
   const focusPlayer = focused.closest("article")?.dataset.playerId,
-    focusKey = focused.dataset.focusKey,
-    keepPopoverClosed = focused.getAttribute("aria-expanded") === "false";
+    focusKey = focused.dataset.focusKey;
   const scrolls = new Map(
     [...cards.querySelectorAll("article")].map((card) => [
       card.dataset.playerId,
@@ -711,13 +719,29 @@ function renderCards() {
       if (members.length) {
         if (!result.report)
           card.append(node("p", "Injury report unavailable", "roster-notice"));
-        const entries = node("ul", undefined, "injury-list");
+        const entries = node("div", undefined, "injury-list");
         entries.setAttribute(
           "aria-label",
-          result.opponent + " available defensive roster and injury entries",
+          result.opponent + " defensive roster",
         );
-        for (const member of members)
-          entries.append(renderMember(member, result));
+        for (const group of groupDefenders(members)) {
+          const section = node(
+            "section",
+            undefined,
+            "roster-group" + (group.key === "first" ? " first-string" : ""),
+          );
+          section.setAttribute("aria-label", group.label);
+          const heading = node("h3", undefined, "roster-group-title");
+          heading.append(
+            node("span", group.label),
+            node("span", String(group.members.length), "group-count"),
+          );
+          const list = node("ul", undefined, "roster-rows");
+          for (const member of group.members)
+            list.append(renderMember(member, result));
+          section.append(heading, list);
+          entries.append(section);
+        }
         card.append(entries);
       } else
         card.append(
@@ -750,7 +774,6 @@ function renderCards() {
     }
   }
   for (let i = selected.length; i < 2; i++) cards.append(emptySlot());
-  if (keepPopoverClosed) dismissPopover();
 }
 async function loadFeed(mode, background = false) {
   if (loading) return;

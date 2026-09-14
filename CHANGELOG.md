@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.6.0 - 2026-09-14
+
+- Open details only on click, tap or explicit keyboard activation. Preserve
+  focus navigation, Escape and outside-click dismissal.
+- Group first-string defenders above other defenders using current depth
+  evidence, preserving injury status and unknown-depth distinctions.
+- Standardize row heights and equal position/injury/status pills, with names
+  on the left and depth on the right. Keep narrow tiles readable with scrolling.
+
 ## 0.5.0 - 2026-09-13
 
 - Show every available opponent defender, including reserves and practice

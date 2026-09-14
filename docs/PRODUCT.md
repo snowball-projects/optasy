@@ -25,7 +25,7 @@ draft, waiver, trade, general ranking or start/sit engine.
 
 ## Implemented behavior
 
-Version 0.5.0 is a static search-and-report dashboard using the approved
+Version 0.6.0 is a static search-and-report dashboard using the approved
 nflverse-data release files. It supports six selected players, automatic
 opponents, explicit byes, source-relative completeness, missing-report states,
 unknown kickoff, started games and source/collection age warnings. Selections
@@ -42,10 +42,12 @@ team mark, opponent and the opponent's available defensive roster with matching 
 
 The board includes every current opponent defensive roster member, including reserve and
 practice-squad members, plus unmatched defensive injury entries. Rows show the name,
-position, injury when present and a concise status label with a matching border.
+three equal position/injury/status pills and depth on the right, all on one
+uniform-height row. Tiles stop narrowing at 300px and scroll horizontally.
+First-string defenders form a separate group above the other defenders.
 Current depth rank 1 at a defensive chart position is labeled first string, not a confirmed game starter.
 Reported injury designations override depth colors. Reserve, practice and
-unknown statuses remain distinct; the color legend is behind information. Hovering, focusing or tapping a row opens a popup with
+unknown statuses remain distinct; the color legend is behind information. Only clicking, tapping or pressing Enter/Space on a row opens a popup with
 full statuses, source notes, availability limits and plausible defensive-role
 relevance where supported. Details do not expand the page. No direct individual
 coverage assignment, replacement quality, numerical boost or demonstrated

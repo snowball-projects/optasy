@@ -232,7 +232,7 @@ input::placeholder {
   scrollbar-width: thin;
 }
 .tiles {
-  --tile-min: 160px;
+  --tile-min: 300px;
   display: grid;
   grid-template-columns: repeat(
     var(--tile-count, 2),
@@ -408,102 +408,94 @@ input::placeholder {
   background: #fcf6e8;
 }
 .injury-list {
-  list-style: none;
   margin: 0;
-  padding: 0 12px;
+  padding: 4px 8px;
   overflow: auto;
   scrollbar-width: thin;
   min-height: 0;
   flex: 1;
 }
-.injury {
-  border-bottom: 1px solid #edf0e8;
+.roster-group + .roster-group {
+  margin-top: 14px;
 }
-.injury:last-child {
-  border: 0;
+.roster-group-title {
+  position: sticky;
+  top: -4px;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 9px 2px 7px;
+  background: #fff;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+}
+.first-string .roster-group-title {
+  color: #396a49;
+}
+.group-count {
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+}
+.roster-rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.injury {
+  margin: 4px 0;
 }
 .injury-row {
+  --pill-width: clamp(40px, 13cqi, 54px);
   width: 100%;
+  height: 64px;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto 26px;
   align-items: center;
-  column-gap: 8px;
-  row-gap: 4px;
+  gap: 6px;
   text-align: left;
-  padding: 11px 0;
-  min-height: 58px;
-  border-radius: 4px;
+  padding: 6px;
+  border: 1px solid var(--status-color);
+  border-left-width: 3px;
+  border-radius: 6px;
 }
 .injury-row:hover,
 .injury-row[aria-expanded="true"] {
-  background: #f5f8ef;
-}
-.injury-person {
-  display: flex;
-  align-items: baseline;
-  gap: 5px;
-  min-width: 0;
+  background: var(--status-fill);
 }
 .injury-name {
+  min-width: 0;
   font-size: clamp(12px, 3.4cqi, 14px);
   font-weight: 570;
   overflow-wrap: anywhere;
-  line-height: 1.3;
+  line-height: 1.2;
 }
-.role {
-  font-size: 9px;
-  color: #778572;
-  white-space: nowrap;
+.member-pills {
+  display: grid;
+  grid-template-columns: repeat(3, var(--pill-width));
+  gap: 3px;
 }
-.injury-detail {
-  font-size: 11px;
-  color: var(--muted);
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
-  grid-row: 2;
-  grid-column: 1;
-  min-width: 0;
-}
-.injury-badges {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 4px;
-  grid-column: 2;
-  grid-row: 1 / 3;
-}
-.status {
-  display: inline-grid;
+.member-pill {
+  display: grid;
   place-items: center;
+  width: var(--pill-width);
+  height: 26px;
+  border: 1px solid #e3e8df;
+  border-radius: 5px;
+  background: #f5f7f1;
   font-size: 10px;
   font-weight: 550;
-  min-width: 23px;
-  height: 23px;
-  padding: 0 5px;
-  border-radius: 4px;
-  background: #f5ecd5;
-  color: #7b5b15;
+  white-space: nowrap;
 }
-.status.absent {
-  background: #f5e3df;
-  color: #924a39;
+.pill-status {
+  background: var(--status-fill);
+  border-color: var(--status-color);
 }
-.status.unknown {
-  background: #f0f3ec;
-  color: #778571;
-}
-.practice {
-  background: #edf2e8;
-  color: #526349;
-}
-.practice.limited {
-  background: #f4eedf;
-  color: #74622f;
-}
-.practice.dnp {
-  background: #f4e9e3;
-  color: #855743;
+.member-depth {
+  font-size: 10px;
+  text-align: right;
+  color: var(--muted);
 }
 .report-empty {
   color: var(--muted);
@@ -599,62 +591,6 @@ input::placeholder {
   background: white;
   z-index: 50;
 }
-@container (max-width: 230px) {
-  .player-header {
-    display: flex;
-    flex-direction: column;
-    text-align: center;
-    padding: 30px 10px 16px;
-    gap: 6px;
-  }
-  .player-team {
-    font-size: 10px;
-  }
-  .matchup {
-    gap: 5px;
-    padding: 10px 8px;
-  }
-  .matchup .team-mark {
-    width: 23px;
-    height: 23px;
-    font-size: 8px;
-  }
-  .report-info {
-    width: 20px;
-    min-width: 20px;
-    height: 20px;
-    font-size: 11px;
-    margin-left: 0;
-  }
-  .opponent-name {
-    font-size: 11px;
-  }
-  .kickoff {
-    font-size: 9px;
-  }
-  .injury-list {
-    padding: 0 8px;
-  }
-  .injury-row {
-    column-gap: 4px;
-  }
-  .injury-person {
-    flex-wrap: wrap;
-    gap: 2px 4px;
-  }
-  .injury-badges {
-    flex-direction: column;
-    gap: 3px;
-  }
-  .status {
-    height: 19px;
-    font-size: 9px;
-    min-width: 22px;
-  }
-  .injury-detail {
-    font-size: 10px;
-  }
-}
 @media (max-width: 720px) {
   .toolbar {
     gap: 10px;
@@ -690,9 +626,6 @@ input::placeholder {
   }
   .board {
     padding: 0 6px 6px;
-  }
-  .tiles {
-    --tile-min: 190px;
   }
   .search-results {
     position: fixed;
@@ -769,39 +702,6 @@ input::placeholder {
   --status-color: #a6aba4;
   --status-fill: #f5f5f2;
 }
-.injury-list {
-  padding: 4px 8px;
-}
-.injury {
-  border: 0;
-  margin: 4px 0;
-}
-.injury-row {
-  border: 1px solid var(--status-color);
-  border-left-width: 3px;
-  border-radius: 6px;
-  padding: 7px 8px;
-  min-height: 36px;
-  row-gap: 3px;
-}
-.injury-row:hover,
-.injury-row[aria-expanded="true"] {
-  background: var(--status-fill);
-}
-.injury-row .status {
-  background: var(--status-fill);
-  color: #34453e;
-  height: 20px;
-  min-width: 27px;
-  font-size: 9px;
-}
-.injury-badges {
-  gap: 3px;
-}
-.depth-badge {
-  font-size: 9px;
-  color: #527359;
-}
 .status-legend {
   display: grid;
   gap: 5px;
@@ -811,14 +711,6 @@ input::placeholder {
   border-left: 3px solid var(--status-color);
   padding-left: 8px;
   font-size: 11px;
-}
-@container (max-width: 230px) {
-  .injury-list {
-    padding: 3px 5px;
-  }
-  .injury-row {
-    padding: 6px 5px;
-  }
 }
 .roster-notice {
   font-size: 11px;
