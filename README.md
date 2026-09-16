@@ -74,7 +74,7 @@ runners require no API key or new paid service. Browser requests stay on the
 site's origin. A labelled fictional example is available when current data
 cannot be loaded.
 
-## Develop
+## Run
 
 Node 24 and Python 3.12:
 
