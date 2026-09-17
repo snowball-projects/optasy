@@ -15,7 +15,7 @@ export const CONTRIBUTION_POLICY = Object.freeze({
   verified: true,
   checked_on: "2026-09-14",
   reason:
-    "nflverse-data publishes its calculated player statistics under CC BY 4.0. optasy selects 2025 regular-season defensive records and sums separate event credits by GSIS identity, preserving historical teams. This relies on the publisher's data grant, not a separately verified NFL agreement. No endorsement or defensive-quality claim is implied. See docs/CONTRIBUTION_REVIEW.md.",
+    "nflverse-data publishes its calculated player statistics under CC BY 4.0. sideline selects 2025 regular-season defensive records and sums separate event credits by GSIS identity, preserving historical teams. This relies on the publisher's data grant, not a separately verified NFL agreement. No endorsement or defensive-quality claim is implied. See docs/CONTRIBUTION_REVIEW.md.",
 });
 const MAX_BYTES = 4 * 1024 * 1024;
 const MAX_EXPANDED_BYTES = 20 * 1024 * 1024;
@@ -208,7 +208,7 @@ export async function collectContributions({
       headers: {
         Accept: "application/gzip",
         "User-Agent":
-          "optasy-contribution-refresh/1.0 (https://github.com/snowball-projects/optasy)",
+          "sideline-contribution-refresh/1.0 (https://github.com/snowball-projects/sideline)",
       },
     });
     if ([301, 302, 303, 307, 308].includes(response.status)) {

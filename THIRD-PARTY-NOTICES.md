@@ -1,4 +1,4 @@
-optasy
+sideline
 Copyright 2026 snowball
 
 Published calibration results were derived from nflverse data licensed under
@@ -18,10 +18,10 @@ https://github.com/nflverse/nflverse-data/releases
 https://github.com/nflverse/nflverse-data/blob/main/LICENSE.md
 
 These data are licensed by their publisher under Creative Commons Attribution
-4.0 International, not optasy's MIT software license:
+4.0 International, not sideline's MIT software license:
 https://creativecommons.org/licenses/by/4.0/
 
-optasy filters roster membership, normalizes identity/team/status fields, joins
+sideline filters roster membership, normalizes identity/team/status fields, joins
 weekly opponents and reports, and adds qualified positional context. Every
 available matching injury entry is retained. No endorsement by nflverse or the
 NFL is implied. Data are provided without warranties under the source license;
@@ -39,19 +39,19 @@ Twenty additional team-logo PNG thumbnails retain their owners' copyrights and
 trademarks. They are used solely for small editorial team identification in
 roster, matchup and injury reporting; no open-source image license, NFL license
 or endorsement is claimed. Wikipedia source-file rationales are not licenses for
-optasy. Exact sources, notices, dimensions and hashes are in web/team-assets.json;
+sideline. Exact sources, notices, dimensions and hashes are in web/team-assets.json;
 docs/MEDIA.md records the limited use and its boundaries. Do not apply the MIT
 software license or nflverse CC BY data grant to these images.
 
 Depth-chart observations are also derived from the separately reviewed
-nflverse-data release under CC BY 4.0. optasy retains the latest observation per
+nflverse-data release under CC BY 4.0. sideline retains the latest observation per
 team and joins by player identity and team; first string does not confirm game
 participation. See docs/DATA_SOURCES.md.
 
 Historical defensive event counts are derived from nflverse-calculated 2025
 regular-season player statistics under the publisher's CC BY 4.0 data grant:
 https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_week_2025.csv.gz
-optasy filters REG defensive records, sums separate credited event counts by
+sideline filters REG defensive records, sums separate credited event counts by
 GSIS identity, and preserves historical team subtotals and source provenance.
 These are not defensive-quality, participation or fantasy-advantage scores.
 No independently verified NFL agreement or endorsement is claimed. No warranties

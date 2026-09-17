@@ -35,7 +35,9 @@ import {
 } from "./popover.mjs?v=0.8.0";
 
 const $ = (id) => document.getElementById(id);
-const STORAGE_KEY = "optasy.selected.v2";
+const STORAGE_KEY = "sideline.selected.v2";
+// Selections saved before the project was renamed from optasy.
+const LEGACY_STORAGE_KEY = "optasy.selected.v2";
 let feed = null,
   selected = [],
   weekKey = "",
@@ -114,7 +116,10 @@ function announce(text) {
 }
 function readSelection() {
   try {
-    const value = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    const stored =
+      localStorage.getItem(STORAGE_KEY) ??
+      localStorage.getItem(LEGACY_STORAGE_KEY);
+    const value = JSON.parse(stored);
     return Array.isArray(value)
       ? [
           ...new Set(
@@ -346,7 +351,7 @@ function sourceDetails() {
         "p",
         activeMode === "example"
           ? "Synthetic data for trying the interface. These are not NFL reports."
-          : "nflverse injury, roster and depth-chart files normally update daily. optasy checks hourly; GitHub runs can be delayed. Report timestamps are not supplied by the current injury source.",
+          : "nflverse injury, roster and depth-chart files normally update daily. sideline checks hourly; GitHub runs can be delayed. Report timestamps are not supplied by the current injury source.",
       ),
     );
     panel.append(
@@ -391,7 +396,7 @@ function sourceDetails() {
         "p",
         activeMode === "example"
           ? "The example is a static fictional fixture and does not update."
-          : "nflverse data are filtered, normalized and joined by optasy. Source-file updates and collection times are not report publication times. Defensive roster and injury entries are shown; independent completeness and current availability are not established.",
+          : "nflverse data are filtered, normalized and joined by sideline. Source-file updates and collection times are not report publication times. Defensive roster and injury entries are shown; independent completeness and current availability are not established.",
         "small",
       ),
     );
@@ -435,17 +440,17 @@ function sourceDetails() {
   const links = node("div", undefined, "info-links");
   for (const [label, url] of [
     ["snowball", "https://snowball-projects.github.io/"],
-    ["Source", "https://github.com/snowball-projects/optasy"],
+    ["Source", "https://github.com/snowball-projects/sideline"],
     [
       "Data review",
-      "https://github.com/snowball-projects/optasy/blob/main/docs/DATA_SOURCES.md",
+      "https://github.com/snowball-projects/sideline/blob/main/docs/DATA_SOURCES.md",
     ],
     [
       "Image credits",
-      "https://github.com/snowball-projects/optasy/blob/main/docs/MEDIA.md",
+      "https://github.com/snowball-projects/sideline/blob/main/docs/MEDIA.md",
     ],
-    ["Operations", "https://snowball-projects.github.io/operations/#optasy"],
-    ["MIT", "https://snowball-projects.github.io/optasy/LICENSE"],
+    ["Operations", "https://snowball-projects.github.io/operations/#sideline"],
+    ["MIT", "https://snowball-projects.github.io/sideline/LICENSE"],
   ])
     links.append(link(label, url));
   panel.append(links);

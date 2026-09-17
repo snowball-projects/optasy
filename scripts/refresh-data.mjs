@@ -25,7 +25,7 @@ export const PUBLICATION_POLICY = Object.freeze({
   verified: true,
   checked_on: "2026-09-13",
   reason:
-    "nflverse-data explicitly releases these datasets under CC BY 4.0. optasy filters the season and current roster, normalizes teams and timestamps, groups every available injury row by game, and retains the latest team depth-chart observations. Original report dates are not supplied. No endorsement is implied.",
+    "nflverse-data explicitly releases these datasets under CC BY 4.0. sideline filters the season and current roster, normalizes teams and timestamps, groups every available injury row by game, and retains the latest team depth-chart observations. Original report dates are not supplied. No endorsement is implied.",
 });
 
 export function sourceDefinitions(season) {
@@ -103,7 +103,7 @@ export async function fetchSource(
       headers: {
         Accept: "text/csv",
         "User-Agent":
-          "optasy-source-refresh/1.0 (https://github.com/snowball-projects/optasy)",
+          "sideline-source-refresh/1.0 (https://github.com/snowball-projects/sideline)",
       },
     });
     if ([301, 302, 303, 307, 308].includes(response.status)) {

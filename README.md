@@ -1,8 +1,8 @@
-# optasy
+# sideline
 
 A snowball project. Find an NFL player and see their opponent's injury report.
 
-[Open optasy](https://snowball-projects.github.io/optasy/) ·
+[Open sideline](https://snowball-projects.github.io/sideline/) ·
 [Product scope](docs/PRODUCT.md) · [Dashboard guide](docs/DASHBOARD.md) ·
 [Data sources](docs/DATA_SOURCES.md) · [Image credits](docs/MEDIA.md)
 
@@ -43,7 +43,7 @@ The dashboard defaults to the current regular-season NFL week when the schedule
 covers it. Explicit byes, missing schedules/reports, changed kickoffs, started
 games and old collections have distinct states. Broad defensive-role context
 is available within report entries. Injury counts do not measure advantage;
-optasy supplies no point boosts, rankings or start/sit verdicts.
+sideline supplies no point boosts, rankings or start/sit verdicts.
 
 All 32 team logos are served locally with recorded provenance and use bases. Player photos are omitted pending a practical
 licensed source. Source details, timestamps, privacy and licensing sit behind
@@ -56,7 +56,7 @@ under its explicit **CC BY 4.0 data license**. The integration preserves all
 matching injury rows and credits the source; independent completeness against
 original team reports is not established. Source report dates are currently
 absent. Information popups distinguish that unknown vintage from file
-modification and optasy collection times.
+modification and sideline collection times.
 
 The prepared collector checks four required sources plus one optional historical
 source in the existing hourly GitHub Actions run at minute 23.
@@ -149,4 +149,4 @@ Team logos have their own documented [public-domain bases and trademark
 status](docs/MEDIA.md). The software license does not cover team marks, private
 inputs or personal writing.
 
-[Operations](https://snowball-projects.github.io/operations/#optasy)
+[Operations](https://snowball-projects.github.io/operations/#sideline)

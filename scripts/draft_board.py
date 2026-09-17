@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # Copyright 2026 snowball
 # SPDX-License-Identifier: MIT
-"""Refresh, build, and watch Optasy's minimal 2026 draft board."""
+"""Refresh, build, and watch Sideline's minimal 2026 draft board."""
 
 from __future__ import annotations
 
@@ -327,7 +327,7 @@ def make_session(credentials: EspnCredentials | None = None) -> requests.Session
         allowed_methods=frozenset(("GET",)),
     )
     session.mount("https://", HTTPAdapter(max_retries=retries))
-    session.headers.update({"User-Agent": "optasy/0.1 draft-board"})
+    session.headers.update({"User-Agent": "sideline/0.1 draft-board"})
     if credentials:
         session.cookies.set("SWID", credentials.swid, domain=".espn.com")
         session.cookies.set("espn_s2", credentials.espn_s2, domain=".espn.com")
@@ -2121,7 +2121,7 @@ def build(
         )
     else:
         source_changes = []
-    database_path = data_dir.parent / "optasy.sqlite"
+    database_path = data_dir.parent / "sideline.sqlite"
     calibration_samples = load_calibration_samples(
         context, data_dir, database_path
     )

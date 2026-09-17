@@ -1,4 +1,4 @@
-# optasy
+# sideline
 
 Search current NFL players, select a handful, and show each player's weekly
 opponent with that team's available defensive roster and defensive injuries.
@@ -85,7 +85,7 @@ never the network.
 
 ## Stewardship
 
-- Write `optasy` and `snowball` in lowercase. Credit software to snowball; Nas
+- Write `sideline` and `snowball` in lowercase. Credit software to snowball; Nas
   Delevski is its founder. Product direction remains with the founder; do not
   invent project tiers or grand claims.
 - Original material uses the MIT [LICENSE](LICENSE). [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) preserves

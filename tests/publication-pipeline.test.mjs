@@ -15,7 +15,7 @@ const exec = promisify(execFile);
 const root = new URL("../", import.meta.url);
 
 test("offline publication pipeline keeps fresh core data through failed history and omits missing or invalid history", async (t) => {
-  const directory = await mkdtemp(join(tmpdir(), "optasy-pipeline-"));
+  const directory = await mkdtemp(join(tmpdir(), "sideline-pipeline-"));
   t.after(() => rm(directory, { recursive: true, force: true }));
   for (const name of [
     "scripts",
@@ -45,7 +45,7 @@ test("offline publication pipeline keeps fresh core data through failed history 
     };
     globalThis.fetch = async (url) => {
       const path = new URL(url).pathname;
-      if (path.includes('/stats_player/') || process.env.OPTASY_TEST_CORE_FAIL)
+      if (path.includes('/stats_player/') || process.env.SIDELINE_TEST_CORE_FAIL)
         return new Response('unavailable', { status: 503 });
       const kind = path.includes('/rosters/') ? 'roster'
         : path.includes('/schedules/') ? 'schedule'
@@ -61,7 +61,7 @@ test("offline publication pipeline keeps fresh core data through failed history 
     await readFile(join(directory, "package.json"), "utf8"),
   );
   const env = { ...process.env, NODE_OPTIONS: `--import=${preload}` };
-  delete env.OPTASY_TEST_CORE_FAIL;
+  delete env.SIDELINE_TEST_CORE_FAIL;
   const refresh = await exec("/bin/sh", ["-c", pkg.scripts.refresh], {
     cwd: directory,
     env,
@@ -90,7 +90,7 @@ test("offline publication pipeline keeps fresh core data through failed history 
   await assert.rejects(
     exec("/bin/sh", ["-c", pkg.scripts.refresh], {
       cwd: directory,
-      env: { ...env, OPTASY_TEST_CORE_FAIL: "1" },
+      env: { ...env, SIDELINE_TEST_CORE_FAIL: "1" },
     }),
   );
   assert.equal(await readFile(currentPath, "utf8"), core);
@@ -109,7 +109,7 @@ test("offline publication pipeline keeps fresh core data through failed history 
 });
 
 test("failed optional acquisition retains only independently revalidated historical artifacts", async (t) => {
-  const directory = await mkdtemp(join(tmpdir(), "optasy-history-"));
+  const directory = await mkdtemp(join(tmpdir(), "sideline-history-"));
   t.after(() => rm(directory, { recursive: true, force: true }));
   const output = new URL(`file://${directory}/contributions.json`);
   const history = normalizeContributions(

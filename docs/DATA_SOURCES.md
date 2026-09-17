@@ -11,7 +11,7 @@ and uses the data repository's explicit
 [CC BY 4.0 license](https://github.com/nflverse/nflverse-data/blob/main/LICENSE.md).
 The license permits sharing and adaptation with attribution. Retain nflverse
 credit, source and license links, the warranty disclaimer, and a description
-of optasy's filtering, normalization and joins. The data do not inherit optasy's
+of sideline's filtering, normalization and joins. The data do not inherit sideline's
 MIT software license.
 
 This decision relies on the publisher's affirmative data license, rather than
@@ -24,7 +24,7 @@ distinguishes its software license from underlying owners' data terms. That
 general caution is not a dataset-specific revocation of the release license.
 The published [injury builder](https://github.com/nflverse/nflverse-rosters/blob/main/exec/update-injuries.R)
 calls `nflapi::nflapi_injuries`; the `nflapi` repository was unavailable for
-independent inspection during this review. Do not claim that optasy has an
+independent inspection during this review. Do not claim that sideline has an
 NFL contract, official endorsement or a separately verified upstream agreement.
 Reassess if the publisher adds a restriction or a rights holder disputes the
 grant. Do not expand this decision to photographs, logos, news text, unreviewed
@@ -59,7 +59,7 @@ unknown coverage, never an empty injury report.
 
 No report publication date or practice-day date is present in the current CSV.
 The week is known, but report vintage is unavailable. HTTP `Last-Modified`
-describes the published file, and retrieval time describes optasy's request;
+describes the published file, and retrieval time describes sideline's request;
 neither may be relabelled as the original report date. A newly retrieved file
 can still contain old evidence. Started games cannot be described as a verified
 pre-game snapshot when the underlying report vintage is unknown.
@@ -104,7 +104,7 @@ authorize direct ESPN collection.
 The [availability documentation](https://nflreadr.nflverse.com/articles/nflverse_data_schedule.html#depth-chart-data)
 says these observations update daily and have timestamps rather than NFL weeks.
 The September 13 file contains a season of observations (about 49.1 MB expanded,
-10.1 MB compressed), with the latest snapshot covering all 32 teams. optasy
+10.1 MB compressed), with the latest snapshot covering all 32 teams. sideline
 retains 2,222 position assignments from each team's latest available timestamp.
 `dt` is an observation timestamp, not confirmation of a game lineup. Rank 1
 means first string at that chart position. Multiple assignments are preserved;
@@ -141,7 +141,7 @@ guarantees. The [availability documentation](https://nflreadr.nflverse.com/artic
 describes schedule updates every five minutes during the season. Rechecking
 more often cannot create newer injury reports than the upstream publishes.
 
-optasy collects centrally once an hour at minute 23 and publishes one compact
+sideline collects centrally once an hour at minute 23 and publishes one compact
 static dataset through the existing GitHub Pages build. Each scheduled run makes
 one download attempt per source: 96 source downloads per scheduled day,
 approximately 317 MB/day at the September 13 observed sizes, plus the HTTPS requests needed

@@ -69,7 +69,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--seasons", nargs="+", type=int, default=[2024, 2025])
     parser.add_argument("--raw-dir", type=Path, default=Path("data/raw/espn"))
-    parser.add_argument("--database", type=Path, default=Path("data/optasy.sqlite"))
+    parser.add_argument("--database", type=Path, default=Path("data/sideline.sqlite"))
     parser.add_argument("--refresh", action="store_true", help="Ignore cached raw JSON.")
     parser.add_argument("--workers", type=int, default=4)
     return parser.parse_args()
@@ -92,7 +92,7 @@ def load_credentials() -> Credentials:
 
 def make_session(credentials: Credentials) -> requests.Session:
     session = requests.Session()
-    session.headers.update({"User-Agent": "optasy/0.1 historical-archive"})
+    session.headers.update({"User-Agent": "sideline/0.1 historical-archive"})
     session.cookies.set("SWID", credentials.swid, domain=".espn.com")
     session.cookies.set("espn_s2", credentials.espn_s2, domain=".espn.com")
     return session

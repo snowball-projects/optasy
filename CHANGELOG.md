@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Rename the project from optasy to sideline. Player selections saved
+  under the previous name are still read.
+
 ## 0.8.0 - prepared locally, unpublished
 
 - Add separately labelled 2025 defensive-event history, historical teams,

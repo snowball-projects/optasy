@@ -37,7 +37,7 @@ with the published release and upserts changed records. This verifies the
 publication mechanism, not a five-minute cron or latency guarantee for the
 upstream producer. No independently inspectable producer schedule was found in
 the checked workflow directory. Retain the five-minute statement as publisher
-documentation, not optasy's promised freshness.
+documentation, not sideline's promised freshness.
 
 Existing use remains under the reviewed
 [nflverse-data CC BY 4.0 grant](https://github.com/nflverse/nflverse-data/blob/main/LICENSE.md),

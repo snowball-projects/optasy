@@ -32,7 +32,7 @@ publication without a copyright notice; it is a US-specific basis, and the
 Kansas City description explicitly notes that protection may differ elsewhere.
 These are documented source determinations, not a blanket license from the NFL.
 
-Team marks retain their trademark status. optasy displays them beside team names
+Team marks retain their trademark status. sideline displays them beside team names
 solely to identify the teams in the report, without implying sponsorship or
 endorsement. They are not snowball branding and do not inherit the software's
 MIT license. Retain these source links when reusing the asset collection.
@@ -45,9 +45,9 @@ team's current English Wikipedia file page. These are copyrighted logos, not
 public-domain works or CC BY assets. Their exact file pages, copyright notices,
 download URLs, dimensions and checksums are recorded in `web/team-assets.json`.
 The source pages identify their own uses as non-free; Wikipedia's rationale is
-not a license for optasy and is not presented as one.
+not a license for sideline and is not presented as one.
 
-optasy's use is limited to editorial team identification in factual roster,
+sideline's use is limited to editorial team identification in factual roster,
 matchup and injury reporting. The complete symbol is needed for identification,
 but only a small thumbnail is retained and it is displayed at up to 64 CSS
 pixels. It is not a branding asset, merchandise design, downloadable logo

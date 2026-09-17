@@ -7,10 +7,10 @@
     {
       "id": "fictional",
       "label": "Fictional demonstration created by snowball",
-      "url": "https://github.com/snowball-projects/optasy/blob/main/web/example.json",
-      "terms_url": "https://github.com/snowball-projects/optasy/blob/main/LICENSE",
+      "url": "https://github.com/snowball-projects/sideline/blob/main/web/example.json",
+      "terms_url": "https://github.com/snowball-projects/sideline/blob/main/LICENSE",
       "permission": "example",
-      "permission_note": "Created for optasy under MIT. All players, matchups and injury reports in this example are fictional."
+      "permission_note": "Created for sideline under MIT. All players, matchups and injury reports in this example are fictional."
     }
   ],
   "roster": {

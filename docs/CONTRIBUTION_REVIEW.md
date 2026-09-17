@@ -85,10 +85,10 @@ This mixed display describes separate recorded events, not a combined score.
 The [nflverse-data license](https://github.com/nflverse/nflverse-data/blob/main/LICENSE.md)
 was retrieved again and remains CC BY 4.0. It grants sharing and adaptation of
 material the publisher has authority to license. The `stats_player` release has
-no observed dataset-specific exclusion. Extending optasy's existing publisher-grant
+no observed dataset-specific exclusion. Extending sideline's existing publisher-grant
 basis to this nflverse-calculated output is the narrow recommendation: retain
 publisher credit, source/license links, modifications and the warranty disclaimer.
-This is a data license separate from optasy's MIT software license, not a claim
+This is a data license separate from sideline's MIT software license, not a claim
 of an independently verified NFL agreement. Do not directly collect NFL APIs,
 add photographs, or import source code under this data decision. Review any
 later restriction or rights-holder objection.

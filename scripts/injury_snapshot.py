@@ -309,7 +309,7 @@ def make_session() -> requests.Session:
         allowed_methods=frozenset(("GET",)),
     )
     session.mount("https://", HTTPAdapter(max_retries=retries))
-    session.headers.update({"User-Agent": "optasy/0.1 prospective-snapshot"})
+    session.headers.update({"User-Agent": "sideline/0.1 prospective-snapshot"})
     return session
 
 

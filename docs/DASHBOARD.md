@@ -1,6 +1,6 @@
 # Dashboard
 
-Prepared local version 0.8.0, unpublished · [Open live optasy (0.7.0)](https://snowball-projects.github.io/optasy/)
+Prepared local version 0.8.0, unpublished · [Open live sideline (0.7.0)](https://snowball-projects.github.io/sideline/)
 
 ## Use
 
@@ -71,7 +71,7 @@ still preserves all source report rows. A row count is only a count. Source cove
 not been established. No record for a team/game produces “coverage unknown,”
 never a fabricated empty report.
 
-Report publication time, source file modification and optasy collection time
+Report publication time, source file modification and sideline collection time
 are separate fields. The current nflverse injury CSV supplies **no report date
 or time**. Information and injury popups explicitly leave that vintage unknown,
 even when the file was freshly updated or retrieved. An undated Out designation

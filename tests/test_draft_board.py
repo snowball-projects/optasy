@@ -475,7 +475,7 @@ class DraftBoardTests(unittest.TestCase):
                             }
                         )
 
-            database = root / "optasy.sqlite"
+            database = root / "sideline.sqlite"
             with sqlite3.connect(database) as connection:
                 connection.execute(
                     "CREATE TABLE draft_picks "

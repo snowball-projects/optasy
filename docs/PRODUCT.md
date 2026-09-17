@@ -141,9 +141,9 @@ availability calibration is not evidence of improved opposing fantasy outcomes.
 
 Keep Python research, append-only frozen inputs, calibration and historical
 draft/league utilities intact and out of the main flow. The founder reported
-that the 2026 draft passed without useful optasy assistance. Do not rewrite
+that the 2026 draft passed without useful sideline assistance. Do not rewrite
 that history, backfill recommendations or reintroduce its scope.
 
-The canonical repository is `snowball-projects/optasy`. optasy remains one
+The canonical repository is `snowball-projects/sideline`. sideline remains one
 peer snowball project. Original software is MIT; third-party data and private
 inputs retain their terms. No further repository retirement is authorized here.
