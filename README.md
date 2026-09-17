@@ -144,7 +144,7 @@ records. The previous dashboard is preserved in Git at
 
 Copyright 2026 snowball. Original software, documentation and synthetic fixtures
 use the [MIT License](LICENSE). Published nflverse data retain **CC BY 4.0**;
-third-party packages and data retain their own terms. See [NOTICE](NOTICE).
+third-party packages and data retain their own terms. See [third-party notices](THIRD-PARTY-NOTICES.md).
 Team logos have their own documented [public-domain bases and trademark
 status](docs/MEDIA.md). The software license does not cover team marks, private
 inputs or personal writing.

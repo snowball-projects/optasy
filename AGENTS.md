@@ -88,7 +88,7 @@ never the network.
 - Write `optasy` and `snowball` in lowercase. Credit software to snowball; Nas
   Delevski is its founder. Product direction remains with the founder; do not
   invent project tiers or grand claims.
-- Original material uses the MIT [LICENSE](LICENSE). [NOTICE](NOTICE) preserves
+- Original material uses the MIT [LICENSE](LICENSE). [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) preserves
   third-party data attribution and terms.
 - Do not add AI-builder labels or production credits to public copy.
 - `CLAUDE.md` imports this file. Keep operational detail in docs rather than

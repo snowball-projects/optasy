@@ -23,7 +23,7 @@ test("offline publication pipeline keeps fresh core data through failed history 
     "tests/fixtures",
     "package.json",
     "LICENSE",
-    "NOTICE",
+    "THIRD-PARTY-NOTICES.md",
   ])
     await cp(new URL(name, root), join(directory, name), {
       recursive: true,

@@ -220,7 +220,7 @@ npm run build:live
 
 `build:live` requires validated live data whose source IDs, asset URLs and license
 URLs match the reviewed collector definitions. Both build paths copy a fixed
-allowlist from `web/`, LICENSE and NOTICE to ignored `dist/`. This includes the
+allowlist from `web/`, LICENSE and THIRD-PARTY-NOTICES.md to ignored `dist/`. This includes the
 media manifest and only its reviewed local SVG/PNG paths; the build checks their
 provenance fields and SHA-256 digests. They never package private research
 inputs, league configuration or arbitrary local files.

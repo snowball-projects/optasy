@@ -97,7 +97,7 @@ await mkdir(new URL("dist/", root));
 await mkdir(new URL("dist/team-logos/", root));
 for (const file of files)
   await cp(new URL("web/" + file, root), new URL("dist/" + file, root));
-for (const file of ["LICENSE", "NOTICE"])
+for (const file of ["LICENSE", "THIRD-PARTY-NOTICES.md"])
   await cp(new URL(file, root), new URL("dist/" + file, root));
 await writeFile(new URL("dist/.nojekyll", root), "");
 console.log(
